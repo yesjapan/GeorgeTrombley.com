@@ -1,0 +1,101 @@
+---
+import '../styles/base.css';
+import Seo from '../components/Seo.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  canonical?: string;
+  type?: 'website' | 'article' | 'book' | 'profile';
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+  bareTitle?: boolean;
+}
+
+const props = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#faf7f0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14110f" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title="George Trombley — Writing" href="/rss.xml" />
+
+    <!--
+      Marks JS as available so the reveal animations only ever hide content when
+      they are also able to show it again. Same trick as fatesquared.com.
+
+      The timer is a failsafe. `.js [data-reveal]` sets opacity:0, so if the
+      module script below never runs — parse error, blocked script, a browser
+      that chokes on something — every section under the hero would stay
+      invisible forever. If nothing has cleared this within 2.5s we drop the
+      `js` class, the opacity rule stops applying, and the page renders plainly
+      without animation. Degraded, but never blank.
+    -->
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      window.__revealFailsafe = setTimeout(function () {
+        document.documentElement.classList.remove('js');
+      }, 2500);
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..600;1,400&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+
+    <Seo {...props} />
+  </head>
+
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <SiteHeader />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <SiteFooter />
+
+    <script>
+      // Reveal-on-scroll. Anything with [data-reveal] fades up once, then the
+      // observer stops watching it. Reduced-motion users get the end state
+      // immediately via CSS, so this still runs but has nothing to animate.
+      //
+      // Reaching this line means the reveal machinery is live, so cancel the
+      // failsafe in <head> that would otherwise strip the `js` class.
+      clearTimeout((window as unknown as { __revealFailsafe?: number }).__revealFailsafe);
+
+      const targets = document.querySelectorAll('[data-reveal]');
+
+      if (
+        'IntersectionObserver' in window &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.add('is-revealed');
+              io.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.06 },
+        );
+        targets.forEach((el) => io.observe(el));
+      } else {
+        targets.forEach((el) => el.classList.add('is-revealed'));
+      }
+    </script>
+  </body>
+</html>

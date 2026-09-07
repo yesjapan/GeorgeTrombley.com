@@ -1,0 +1,187 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site, links, publisher } from '../data/site';
+import cover from '../assets/fate-squared-cover.jpg';
+
+const releaseDate = new Date('2026-10-29T00:00:00Z');
+const isbn = '9781959949046';
+
+const releaseLabel = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+}).format(releaseDate);
+
+const isOut = Date.now() >= releaseDate.valueOf();
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Book',
+  name: 'Fate Squared',
+  author: { '@type': 'Person', name: site.name, url: site.url },
+  publisher: { '@type': 'Organization', name: publisher.fiction },
+  isbn,
+  datePublished: '2026-10-29',
+  inLanguage: 'en',
+  genre: 'Thriller',
+  url: links.fateSquared,
+  description:
+    'Is one persons life a fair trade to save millions? A thriller by George Trombley.',
+};
+---
+
+<BaseLayout
+  title="Fiction"
+  description="Fate Squared, the first novel by George Trombley — a thriller from Sandspeck Press, published 29 October 2026."
+  type="book"
+  jsonLd={jsonLd}
+>
+  <section class="section wrap">
+    <p class="label">Fiction</p>
+    <h1 class="fiction-page__title">Fate Squared</h1>
+
+    <div class="fiction-page">
+      <figure class="fiction-page__figure">
+        <Image
+          src={cover}
+          alt="Cover of Fate Squared — a stylised magenta and indigo head opening to reveal a figure in a glowing doorway"
+          width={720}
+          widths={[300, 480, 720]}
+          sizes="(max-width: 48rem) 60vw, 20rem"
+          loading="eager"
+          class="fiction-page__cover"
+        />
+      </figure>
+
+      <div class="fiction-page__body">
+        <p class="fiction-page__standfirst">
+          Is one person&rsquo;s life a fair trade to save millions?
+        </p>
+
+        <div class="prose">
+          <p>
+            Ever since his MMA career ended at its height with a horrible injury,
+            George Williams has worked every day of the week as a personal
+            trainer in San Diego, paying down a medical debt that never seems to
+            shrink. Then a shadowy tech corporation called LETR makes him an
+            offer too good to refuse — and his girlfriend, Shin Hye Kim, tells
+            him to walk away from it.
+          </p>
+
+          <p>
+            My first novel. It has nothing to do with language learning, and
+            writing it was the hardest and most enjoyable thing I have done in
+            years.
+          </p>
+        </div>
+
+        <dl class="fiction-page__facts">
+          <div>
+            <dt class="label">{isOut ? 'Published' : 'Publishing'}</dt>
+            <dd>{releaseLabel}</dd>
+          </div>
+          <div>
+            <dt class="label">Publisher</dt>
+            <dd>{publisher.fiction}</dd>
+          </div>
+          <div>
+            <dt class="label">Genre</dt>
+            <dd>Thriller</dd>
+          </div>
+          <div>
+            <dt class="label">ISBN</dt>
+            <dd class="fiction-page__isbn">{isbn}</dd>
+          </div>
+        </dl>
+
+        <div class="fiction-page__actions">
+          <a class="btn btn-seal" href={links.fateSquared} rel="noopener">
+            Go to fatesquared.com
+          </a>
+        </div>
+
+        <p class="fiction-page__note">
+          The novel has a site of its own — synopsis, character dossier, an audio
+          sample, and the notification list for release day.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .fiction-page__title {
+    font-size: var(--text-4xl);
+    margin-block: var(--space-2xs) var(--space-xl);
+  }
+
+  .fiction-page {
+    display: grid;
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    gap: var(--space-xl);
+    align-items: start;
+  }
+
+  .fiction-page__figure {
+    margin: 0;
+  }
+
+  .fiction-page__cover {
+    inline-size: 100%;
+    block-size: auto;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .fiction-page__standfirst {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    line-height: var(--leading-snug);
+    color: var(--ink);
+    margin-block-end: var(--space-md);
+    max-inline-size: 24ch;
+  }
+
+  .fiction-page__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: var(--space-md);
+    margin-block-start: var(--space-xl);
+    padding-block-start: var(--space-md);
+    border-block-start: 1px solid var(--rule);
+  }
+
+  .fiction-page__facts dd {
+    margin: 0.35em 0 0;
+    font-size: var(--text-sm);
+  }
+
+  .fiction-page__isbn {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .fiction-page__actions {
+    margin-block-start: var(--space-lg);
+  }
+
+  .fiction-page__note {
+    margin-block-start: var(--space-sm);
+    font-size: var(--text-sm);
+    color: var(--ink-faint);
+    max-inline-size: var(--measure);
+  }
+
+  @media (max-width: 48rem) {
+    .fiction-page {
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+
+    .fiction-page__figure {
+      max-inline-size: 15rem;
+    }
+  }
+</style>

@@ -1,0 +1,16 @@
+---
+title: 'Drops.'
+date: 2025-05-04
+description: 'Based on a true story.'
+canonicalUrl: 'https://polyglotgeorge.substack.com/p/drops'
+originallyPublishedAt: 'Substack'
+---
+The room smelled wet, like the moss smelled in the Oregon forest my daughter took us in to hike. But this isn’t a forest, it’s my office. It’s the place I spend the majority of my days creating or at least dreaming of creating while I mindlessly rip my recent haul of used DVDs into my personal media server. I don’t know if I’m collecting the movies so I can watch them later, or just for the satisfaction of seeing the number of movies on my server go up. It was a pleasant smell, one that I wish I could conjure up on demand. The air was cool as the air on a spring morning, not like the usual stifling heat resulting from 20+ hard drives spinning in large drive bays and four monitors displaying the nostalgic pipe screensaver I had set on them. I wasn’t sure if they really needed a screensaver, but at 1000 bucks a pop I wasn’t going to take any chances the high-tech OLEDs wouldn’t burn in.
+
+I only had a fraction of a moment to enjoy the smell and nearly perfect temperature of the room until the invasive thoughts started. My wife must have let her bath water overflow and leak down into my office which was directly below her bathroom. In the three years since moving into the place it had been on my mind to get the bathtub replaced with one that has a proper overflow valve. How on earth did this house pass inspection? Maybe the regulations were different 20 years ago. All the other houses I had viewed of similar build on the block had the same style of bathtubs all without a relief valve. This shortsighted decision of the builder to cheap out on the bathtub construction has possibly destroyed nearly 20,000 dollars of equipment.
+
+In the next few steps I passed the shelf jam packed with DVDs and just past the large speaker blocking my view of the supposed leak, I saw the window I had opened earlier was the cause of the cool breeze in the room. That and the fan I had left on from earlier. The sound of rain reverberated throughout the room entering from the six inch gap of the open window. The dampness of the rain brought with it a small part of the Japanese forests I would play in when I was in Japan as a child. They say smell is the greatest inducer of memories and it would seem it’s true. It was then I realized there were birds chirping almost to the beat of the pitter-pattering rain. Do birds chirp at 4am in the morning? I guess they do.
+
+If only I could bottle up this sense of calm and wellbeing the rain and the birds are creating in my soul. The clicks of an occasionally spinning hard drive is blending perfectly with the rain hitting the patio cover just outside the window. Normally the sound of the hard drives would beckon my energy to whatever project my current obsession had led me to. But now, it’s the sound of water drops launched from clouds thousands of feet above my desert home that beckons me outside.
+
+With the remote switches sitting on my desk I turn off each of the three lamps illuminating the room. And just before I stand up to go sit outside, I hit the switch controlling the monitors. The projects can wait for another day, now it’s time to have a quiet conversation with the rain.

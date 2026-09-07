@@ -1,0 +1,563 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BookCard from '../components/BookCard.astro';
+import KitForm from '../components/KitForm.astro';
+import VideoCard from '../components/VideoCard.astro';
+import { site, links, sameAs } from '../data/site';
+import { series } from '../data/series';
+import authorPhoto from '../assets/author.jpg';
+import { videos as allVideos } from '../data/videos';
+
+const books = (await getCollection('books')).filter((b) => !b.data.draft);
+
+// The shelf on the home page. Covers do the selling here, so books that have
+// cover art come first and cover-less ones only fill leftover slots — a front
+// page that is half typographic placeholders reads as unfinished. /books shows
+// the complete catalogue either way, placeholders and all.
+//
+// Within each group, one book per series before a second from any series, so a
+// shelf of six is never five volumes of the same course.
+function shelfOrder(pool: typeof books) {
+  const bySeries = new Map<string, typeof books>();
+  for (const book of pool) {
+    const list = bySeries.get(book.data.series) ?? [];
+    list.push(book);
+    bySeries.set(book.data.series, list);
+  }
+  for (const list of bySeries.values()) {
+    list.sort((a, b) => a.data.order - b.data.order);
+  }
+
+  // Round-robin across series, following the shelf order in series.ts.
+  const keys = Object.keys(series).filter((k) => bySeries.has(k));
+  const out: typeof books = [];
+  for (let round = 0; out.length < pool.length; round++) {
+    let placed = false;
+    for (const key of keys) {
+      const book = bySeries.get(key)?.[round];
+      if (book) {
+        out.push(book);
+        placed = true;
+      }
+    }
+    if (!placed) break;
+  }
+  return out;
+}
+
+const withCovers = shelfOrder(books.filter((b) => b.data.cover));
+const withoutCovers = shelfOrder(books.filter((b) => !b.data.cover));
+const homeShelf = [...withCovers, ...withoutCovers].slice(0, 6);
+
+const posts = (await getCollection('posts'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const news = (await getCollection('news'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const videos = allVideos.slice(0, 4);
+
+const facts = [
+  { value: String(books.length), label: 'language books' },
+  { value: '4', label: 'languages taught' },
+  { value: '18', label: 'years interpreting' },
+  { value: '1', label: 'novel, October 2026' },
+];
+
+const dateFmt = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: site.name,
+    url: site.url,
+    jobTitle: 'Author and Japanese interpreter',
+    description: site.description,
+    sameAs,
+    knowsLanguage: ['en', 'ja', 'ko', 'es'],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: site.name,
+    url: site.url,
+    inLanguage: 'en',
+  },
+];
+---
+
+<BaseLayout title={`${site.name} — ${site.tagline}`} bareTitle jsonLd={jsonLd}>
+  <!-- ===================== Hero ===================== -->
+  <section class="hero wrap-wide">
+    <div class="hero__text">
+      <p class="label hero__eyebrow">Interpreter &middot; Author &middot; Novelist</p>
+
+      <h1 class="hero__title">
+        Eighteen years interpreting Japanese. Then I wrote the book
+        <em>I</em> wanted.
+      </h1>
+
+      <p class="hero__lede">
+        I interpreted for Microsoft, IBM, NTT DoCoMo and Lucent, in boardrooms
+        across four continents, before I ever wrote a textbook. What I kept
+        noticing was that the books all started in the wrong place — page one,
+        chapter one, forty-six characters to memorise before you could say
+        anything at all. So the From Zero! series starts where a beginner
+        actually is: at zero.
+      </p>
+
+      <div class="hero__actions">
+        <a class="btn btn-seal" href="/books">Browse the books</a>
+        <a class="btn" href="/about">About me</a>
+      </div>
+    </div>
+
+    <figure class="hero__portrait">
+      <Image
+        src={authorPhoto}
+        alt="George Trombley"
+        width={720}
+        widths={[320, 480, 720]}
+        sizes="(max-width: 56rem) 60vw, 22rem"
+        loading="eager"
+        fetchpriority="high"
+        class="hero__photo"
+      />
+    </figure>
+  </section>
+
+  <!-- ===================== Facts ===================== -->
+  <section class="wrap-wide">
+    <dl class="facts" data-reveal>
+      {
+        facts.map((fact) => (
+          <div class="facts__item">
+            <dt class="facts__value">{fact.value}</dt>
+            <dd class="facts__label">{fact.label}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <!-- ===================== Books ===================== -->
+  <section class="section wrap-wide" aria-labelledby="books-heading">
+    <div class="section-head">
+      <h2 id="books-heading">The books</h2>
+      <a class="section-head__more" href="/books">All {books.length} &rarr;</a>
+    </div>
+
+    <div class="home-shelf">
+      {homeShelf.map((book, i) => <BookCard book={book} priority={i < 3} />)}
+    </div>
+  </section>
+
+  <!-- ===================== Fiction ===================== -->
+  <section class="wrap-wide">
+    <aside class="fiction" data-reveal>
+      <div class="fiction__body">
+        <p class="label fiction__eyebrow">Fiction &middot; 29 October 2026</p>
+        <h2 class="fiction__title">Fate Squared</h2>
+        <p class="fiction__blurb">
+          A former MMA fighter with a debt he cannot pay. A tech company whose
+          offer is far too good. And one question underneath all of it: is one
+          person&rsquo;s life a fair trade to save millions?
+        </p>
+        <div class="fiction__actions">
+          <a class="btn fiction__btn" href={links.fateSquared} rel="noopener">
+            Read the first chapter
+          </a>
+          <a class="btn fiction__btn fiction__btn--ghost" href="/fiction">
+            More about the novel
+          </a>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ===================== Writing ===================== -->
+  {
+    posts.length > 0 && (
+      <section class="section wrap-wide" aria-labelledby="writing-heading">
+        <div class="section-head">
+          <h2 id="writing-heading">Writing</h2>
+          <a class="section-head__more" href="/writing">
+            All posts &rarr;
+          </a>
+        </div>
+
+        <ul class="post-list" role="list">
+          {posts.map((post) => (
+            <li class="post-list__item" data-reveal>
+              <a class="post-list__link" href={'/writing/' + post.id}>
+                <time class="label" datetime={post.data.date.toISOString()}>
+                  {dateFmt.format(post.data.date)}
+                </time>
+                <h3 class="post-list__title">{post.data.title}</h3>
+                <p class="post-list__excerpt">{post.data.description}</p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <!-- ===================== Videos ===================== -->
+  {
+    videos.length > 0 && (
+      <section class="section wrap-wide" aria-labelledby="videos-heading">
+        <div class="section-head">
+          <h2 id="videos-heading">Recent videos</h2>
+          <a class="section-head__more" href="/videos">
+            All videos &rarr;
+          </a>
+        </div>
+
+        <div class="video-strip">
+          {videos.map((video) => (
+            <VideoCard video={video} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- ===================== News ===================== -->
+  {
+    news.length > 0 && (
+      <section class="section wrap-wide" aria-labelledby="news-heading">
+        <div class="section-head">
+          <h2 id="news-heading">News</h2>
+          <a class="section-head__more" href="/news">
+            Everything &rarr;
+          </a>
+        </div>
+
+        <ul class="news-list" role="list">
+          {news.map((item) => (
+            <li class="news-list__item" data-reveal>
+              <time class="label" datetime={item.data.date.toISOString()}>
+                {dateFmt.format(item.data.date)}
+              </time>
+              <div>
+                <h3 class="news-list__title">
+                  {item.data.link ? (
+                    <a href={item.data.link}>{item.data.title}</a>
+                  ) : (
+                    item.data.title
+                  )}
+                </h3>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <div class="wrap-wide">
+    <KitForm />
+  </div>
+</BaseLayout>
+
+<style>
+  /* ---------- Hero ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+    gap: var(--space-2xl);
+    align-items: center;
+    padding-block: var(--space-2xl) var(--space-xl);
+  }
+
+  .hero__eyebrow {
+    margin-block-end: var(--space-md);
+  }
+
+  .hero__title {
+    font-size: var(--text-4xl);
+    max-inline-size: 16ch;
+  }
+
+  /* The one italic in the design, and it lands on the word that carries the
+     whole sentence. */
+  .hero__title em {
+    font-style: italic;
+    color: var(--seal);
+  }
+
+  .hero__lede {
+    margin-block-start: var(--space-md);
+    max-inline-size: 46ch;
+    font-size: var(--text-lg);
+    line-height: var(--leading-prose);
+    color: var(--ink-muted);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin-block-start: var(--space-lg);
+  }
+
+  /* Portrait sits in a seal-red frame offset down and right, so the photo and
+     the rule are visibly two objects rather than a border. */
+  .hero__portrait {
+    position: relative;
+    margin: 0;
+    justify-self: end;
+    inline-size: 100%;
+    max-inline-size: 22rem;
+  }
+
+  .hero__portrait::after {
+    content: '';
+    position: absolute;
+    inset: var(--space-sm) calc(var(--space-sm) * -1) calc(var(--space-sm) * -1)
+      var(--space-sm);
+    border: 1px solid var(--seal);
+    border-radius: var(--radius);
+    z-index: -1;
+  }
+
+  .hero__photo {
+    inline-size: 100%;
+    block-size: auto;
+    border-radius: var(--radius);
+    filter: grayscale(1) contrast(1.04);
+    box-shadow: var(--shadow-cover);
+    transition: filter var(--dur-slow) var(--ease-out);
+  }
+
+  .hero__portrait:hover .hero__photo {
+    filter: grayscale(0) contrast(1);
+  }
+
+  /* ---------- Facts ---------- */
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: var(--space-md);
+    margin: 0;
+    padding-block: var(--space-lg);
+    border-block: 1px solid var(--rule);
+  }
+
+  .facts__value {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .facts__label {
+    margin: 0.35em 0 0;
+    font-size: var(--text-xs);
+    letter-spacing: 0.03em;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- Section heads ---------- */
+  .section-head__more {
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .section-head__more:hover {
+    color: var(--seal);
+  }
+
+  /* ---------- Shelf ---------- */
+  .home-shelf {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+    gap: var(--space-lg) var(--space-md);
+    align-items: end;
+  }
+
+  /* ---------- Fiction ---------- */
+  .fiction {
+    position: relative;
+    overflow: hidden;
+    padding: var(--space-2xl) var(--space-lg);
+    background: var(--paper-invert);
+    color: var(--ink-invert);
+    border-radius: var(--radius-lg);
+  }
+
+  /* The manuscript grid again, inverted, so the panel reads as the same paper
+     turned over rather than a foreign block. */
+  .fiction::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        to right,
+        color-mix(in srgb, var(--ink-invert) 7%, transparent) 0 1px,
+        transparent 1px var(--square)
+      ),
+      repeating-linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--ink-invert) 7%, transparent) 0 1px,
+        transparent 1px var(--square)
+      );
+    pointer-events: none;
+  }
+
+  .fiction__body {
+    position: relative;
+    max-inline-size: 44ch;
+  }
+
+  .fiction__eyebrow {
+    color: color-mix(in srgb, var(--ink-invert) 62%, transparent);
+  }
+
+  .fiction__title {
+    font-size: var(--text-3xl);
+    margin-block: var(--space-2xs) var(--space-sm);
+  }
+
+  .fiction__blurb {
+    color: color-mix(in srgb, var(--ink-invert) 80%, transparent);
+    font-size: var(--text-lg);
+    line-height: var(--leading-prose);
+  }
+
+  .fiction__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin-block-start: var(--space-lg);
+  }
+
+  .fiction__btn {
+    --btn-bg: var(--seal);
+    --btn-fg: var(--on-seal);
+    --btn-edge: var(--seal);
+  }
+
+  .fiction__btn:hover {
+    --btn-bg: var(--seal-strong);
+    --btn-edge: var(--seal-strong);
+    color: var(--on-seal);
+  }
+
+  .fiction__btn--ghost {
+    --btn-bg: transparent;
+    --btn-fg: var(--ink-invert);
+    --btn-edge: color-mix(in srgb, var(--ink-invert) 35%, transparent);
+  }
+
+  .fiction__btn--ghost:hover {
+    --btn-bg: transparent;
+    --btn-edge: var(--ink-invert);
+  }
+
+  /* ---------- Posts ---------- */
+  .post-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
+    gap: var(--space-lg);
+    list-style: none;
+    padding: 0;
+  }
+
+  .post-list__link {
+    display: grid;
+    gap: var(--space-2xs);
+    text-decoration: none;
+    padding-block-start: var(--space-sm);
+    border-block-start: 1px solid var(--rule);
+    transition: border-color var(--dur) var(--ease-out);
+  }
+
+  .post-list__link:hover {
+    border-block-start-color: var(--seal);
+  }
+
+  .post-list__title {
+    font-size: var(--text-xl);
+    color: var(--ink);
+  }
+
+  .post-list__link:hover .post-list__title {
+    color: var(--seal);
+  }
+
+  .post-list__excerpt {
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+    line-height: var(--leading-normal);
+  }
+
+  /* ---------- Videos ---------- */
+  .video-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    gap: var(--space-md);
+  }
+
+  /* ---------- News ---------- */
+  .news-list {
+    display: grid;
+    gap: var(--space-sm);
+    list-style: none;
+    padding: 0;
+  }
+
+  .news-list__item {
+    display: grid;
+    grid-template-columns: 10rem minmax(0, 1fr);
+    gap: var(--space-md);
+    align-items: baseline;
+    padding-block: var(--space-sm);
+    border-block-start: 1px solid var(--rule);
+  }
+
+  .news-list__title {
+    font-size: var(--text-lg);
+  }
+
+  .news-list__title a {
+    text-decoration: none;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 56rem) {
+    .hero {
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+      padding-block-start: var(--space-xl);
+    }
+
+    .hero__portrait {
+      order: -1;
+      justify-self: start;
+      max-inline-size: 15rem;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .news-list__item {
+      grid-template-columns: 1fr;
+      gap: var(--space-3xs);
+    }
+  }
+</style>

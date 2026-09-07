@@ -1,0 +1,177 @@
+/* ============================================================================
+   Design tokens — georgetrombley.com
+
+   The concept is 原稿用紙 (genkō yōshi): the squared manuscript paper you learn
+   to write kana on. Three materials, nothing else:
+
+     paper  — warm, slightly yellowed off-white
+     ink    — near-black with a brown cast, never pure #000
+     seal   — one vermilion, the red of a hanko and of a teacher's pen
+
+   Book covers are loud. Everything here stays quiet so they read as a shelf.
+
+   Both colour schemes are defined on :root. Nothing has its only definition
+   inside a media query, so a token can never resolve to nothing.
+   ========================================================================= */
+
+:root {
+  color-scheme: light dark;
+
+  /* ---- Materials: light (paper) ---------------------------------------- */
+  --paper: #faf7f0;
+  --paper-raised: #f4eee2;
+  --paper-sunken: #ece4d5;
+  --paper-invert: #191512;
+
+  --ink: #191512;
+  --ink-muted: #4f473f;
+  --ink-faint: #877d71;
+  --ink-invert: #faf7f0;
+
+  --seal: #b8392e;
+  --seal-strong: #9c2d24;
+  --seal-wash: rgba(184, 57, 46, 0.09);
+  /* Text drawn ON the seal colour. Light mode: paper. Dark mode the seal is
+     brightened, so white-on-seal drops to ~3:1 — it flips to near-black. */
+  --on-seal: #faf7f0;
+
+  --rule: rgba(25, 21, 18, 0.15);
+  --rule-strong: rgba(25, 21, 18, 0.32);
+  --grid: rgba(25, 21, 18, 0.052);
+  --grain: 0.035;
+
+  --shadow-cover:
+    0 1px 1px rgba(25, 21, 18, 0.06),
+    0 6px 14px -6px rgba(25, 21, 18, 0.22),
+    0 18px 40px -22px rgba(25, 21, 18, 0.3);
+  --shadow-lift:
+    0 2px 4px rgba(25, 21, 18, 0.07),
+    0 14px 30px -12px rgba(25, 21, 18, 0.26),
+    0 34px 60px -34px rgba(25, 21, 18, 0.34);
+
+  /* ---- Type ------------------------------------------------------------ */
+  --font-display: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype',
+    'Book Antiqua', Palatino, Georgia, serif;
+  --font-body: 'Instrument Sans', ui-sans-serif, -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Fluid scale, 320px → 1440px viewport. */
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --text-lg: clamp(1.125rem, 1.07rem + 0.27vw, 1.3125rem);
+  --text-xl: clamp(1.375rem, 1.28rem + 0.48vw, 1.75rem);
+  --text-2xl: clamp(1.75rem, 1.55rem + 1vw, 2.5rem);
+  --text-3xl: clamp(2.25rem, 1.85rem + 2vw, 3.75rem);
+  --text-4xl: clamp(2.75rem, 1.9rem + 4.25vw, 6rem);
+  --text-5xl: clamp(3.25rem, 1.6rem + 8.25vw, 9.5rem);
+
+  --leading-tight: 1.04;
+  --leading-snug: 1.2;
+  --leading-normal: 1.5;
+  --leading-prose: 1.68;
+
+  /* Optical letterspacing — display type is set large, so it needs to tighten. */
+  --tracking-display: -0.022em;
+  --tracking-body: 0;
+  --tracking-label: 0.14em;
+
+  /* ---- Space ----------------------------------------------------------- */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.25rem;
+  --space-xl: 3.5rem;
+  --space-2xl: clamp(4rem, 3rem + 5vw, 7rem);
+  --space-3xl: clamp(5.5rem, 4rem + 7.5vw, 10rem);
+
+  /* The manuscript square. Every rhythm on the site is a multiple of it. */
+  --square: 2.75rem;
+
+  --measure: 34rem;        /* prose line length */
+  --wrap: 74rem;           /* main content column */
+  --wrap-wide: 88rem;      /* full-bleed-ish sections */
+  --gutter: clamp(1.25rem, 0.65rem + 3vw, 3.5rem);
+
+  --radius-sm: 2px;
+  --radius: 3px;
+  --radius-lg: 5px;
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur: 260ms;
+  --dur-slow: 620ms;
+}
+
+/* ---- Materials: dark (ink) ---------------------------------------------
+   Not an inversion — a different material. The paper goes away and the page
+   becomes ink, with the seal brightened so it survives on a dark ground.     */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #14110f;
+    --paper-raised: #1d1916;
+    --paper-sunken: #0f0d0b;
+    --paper-invert: #f6f1e7;
+
+    --ink: #efe8dc;
+    --ink-muted: #b3a89a;
+    --ink-faint: #8a8073;
+    --ink-invert: #14110f;
+
+    --seal: #e06a55;
+    --seal-strong: #ef8570;
+    --seal-wash: rgba(224, 106, 85, 0.12);
+    --on-seal: #1a0f0c;
+
+    --rule: rgba(239, 232, 220, 0.16);
+    --rule-strong: rgba(239, 232, 220, 0.34);
+    --grid: rgba(239, 232, 220, 0.045);
+    --grain: 0.05;
+
+    --shadow-cover:
+      0 1px 1px rgba(0, 0, 0, 0.4),
+      0 8px 18px -8px rgba(0, 0, 0, 0.6),
+      0 22px 46px -24px rgba(0, 0, 0, 0.75);
+    --shadow-lift:
+      0 2px 6px rgba(0, 0, 0, 0.45),
+      0 16px 34px -14px rgba(0, 0, 0, 0.65),
+      0 38px 68px -36px rgba(0, 0, 0, 0.8);
+  }
+}
+
+:root[data-theme='dark'] {
+  --paper: #14110f;
+  --paper-raised: #1d1916;
+  --paper-sunken: #0f0d0b;
+  --paper-invert: #f6f1e7;
+
+  --ink: #efe8dc;
+  --ink-muted: #b3a89a;
+  --ink-faint: #8a8073;
+  --ink-invert: #14110f;
+
+  --seal: #e06a55;
+  --seal-strong: #ef8570;
+  --seal-wash: rgba(224, 106, 85, 0.12);
+  --on-seal: #1a0f0c;
+
+  --rule: rgba(239, 232, 220, 0.16);
+  --rule-strong: rgba(239, 232, 220, 0.34);
+  --grid: rgba(239, 232, 220, 0.045);
+  --grain: 0.05;
+
+  --shadow-cover:
+    0 1px 1px rgba(0, 0, 0, 0.4),
+    0 8px 18px -8px rgba(0, 0, 0, 0.6),
+    0 22px 46px -24px rgba(0, 0, 0, 0.75);
+  --shadow-lift:
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    0 16px 34px -14px rgba(0, 0, 0, 0.65),
+    0 38px 68px -36px rgba(0, 0, 0, 0.8);
+}

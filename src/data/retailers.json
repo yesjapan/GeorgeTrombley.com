@@ -1,0 +1,486 @@
+{
+  "_comment": "GENERATED from the FromZero storefront catalogue, then hand-pruned. Book Depository (closed 2023) and Right Stuf (folded into Crunchyroll) were removed. Safe to hand-edit; see src/data/retailers.ts for how it is used.",
+  "amazonAffiliate": {
+    "japanese-from-zero-1": {
+      "us": "https://amzn.to/3qCFIQO",
+      "uk": "https://amzn.to/34ai71x",
+      "de": "https://amzn.to/3gDegg5",
+      "ca": "https://amzn.to/3rILpNK",
+      "jp": "https://amzn.to/3J2rYoJ",
+      "fr": "https://amzn.to/3IYDRMo",
+      "it": "https://amzn.to/3J0uKe7",
+      "es": "https://amzn.to/3GrRYbw",
+      "au": "https://amzn.to/3p3pu1w"
+    },
+    "japanese-from-zero-2": {
+      "us": "https://amzn.to/3nEaA1d",
+      "uk": "https://amzn.to/3L10rps",
+      "de": "https://amzn.to/3rlilLP",
+      "ca": "https://amzn.to/3JmWcCT",
+      "jp": "https://amzn.to/32UYVE8",
+      "fr": "https://amzn.to/3J0uhsn",
+      "it": "https://amzn.to/3s9UY7c",
+      "es": "https://amzn.to/3GuAQSm",
+      "au": "https://amzn.to/3JGEdsy"
+    },
+    "japanese-from-zero-3": {
+      "us": "https://amzn.to/3GLIoB9",
+      "uk": "https://amzn.to/3oo0DFE",
+      "de": "https://amzn.to/3gmun1b",
+      "ca": "https://amzn.to/3JAwPOr",
+      "jp": "https://amzn.to/3AZLyPB",
+      "fr": "https://amzn.to/3GkGPZP",
+      "it": "https://amzn.to/3AW0sGx",
+      "es": "https://amzn.to/3uqpLPU",
+      "au": "https://amzn.to/3p4I9tR"
+    },
+    "japanese-from-zero-4": {
+      "us": "https://amzn.to/3fD72Ik",
+      "uk": "https://amzn.to/3rlFBcG",
+      "de": "https://amzn.to/3B4k6jW",
+      "ca": "https://amzn.to/3HKvu74",
+      "jp": "https://amzn.to/3rryQ9q",
+      "fr": "https://amzn.to/3gozwWu",
+      "it": "https://amzn.to/3ukX7jb",
+      "es": "https://amzn.to/35OnrrK",
+      "au": "https://amzn.to/3AbT7nO"
+    },
+    "japanese-from-zero-5": {
+      "us": "https://amzn.to/3FHtHxw",
+      "uk": "https://amzn.to/3opcqn3",
+      "de": "https://amzn.to/3up3qC8",
+      "ca": "https://amzn.to/3rF5Zy9",
+      "jp": "https://amzn.to/3rpuEa7",
+      "fr": "https://amzn.to/3ooBQBd",
+      "it": "https://amzn.to/3GnUZth",
+      "es": "https://amzn.to/34akMIz",
+      "au": "https://amzn.to/3A8l53t"
+    },
+    "hiragana-from-zero": {
+      "us": "https://amzn.to/3GWcWjX",
+      "uk": "https://amzn.to/3HpTM67",
+      "de": "https://amzn.to/348oDG1",
+      "ca": "https://amzn.to/3Jh3w39",
+      "jp": "https://amzn.to/3un8sPA",
+      "fr": "https://amzn.to/34uJy5O",
+      "it": "https://amzn.to/3L4diYd",
+      "es": "https://amzn.to/34wU7VS",
+      "au": "https://amzn.to/3SFx140"
+    },
+    "katakana-from-zero": {
+      "us": "https://amzn.to/3AdE5MI",
+      "uk": "https://amzn.to/3rquejR",
+      "de": "https://amzn.to/3omV9uC",
+      "ca": "https://amzn.to/3uIhcQC",
+      "jp": "https://amzn.to/34A4AzO",
+      "fr": "https://amzn.to/3uq4zK0",
+      "it": "https://amzn.to/3omD3cs",
+      "es": "https://amzn.to/3J1zn7H",
+      "au": "https://amzn.to/3bIF8w8"
+    },
+    "kana-from-zero": {
+      "us": "https://amzn.to/3IgQXEt",
+      "uk": "https://amzn.to/3oqrG35",
+      "de": "https://amzn.to/34glWlF",
+      "ca": "https://amzn.to/3uWJZ4f",
+      "jp": "https://amzn.to/3rnQtqj",
+      "fr": "https://amzn.to/3om1eaI",
+      "it": "https://www.amazon.it/Kana-Zero-Japanese-integrated-workbook/dp/0989654583",
+      "es": "https://amzn.to/3uuxTix",
+      "au": "https://amzn.to/3djhTcy"
+    },
+    "kanji-from-zero-1": {
+      "us": "https://amzn.to/3GK3GPu",
+      "uk": "https://amzn.to/3slOGSe",
+      "de": "https://amzn.to/3sfydPh",
+      "ca": "https://amzn.to/3GIpsTd",
+      "jp": "https://amzn.to/3rojn9S",
+      "fr": "https://amzn.to/3omCBeg",
+      "it": "https://amzn.to/3LaQ16X",
+      "es": "https://amzn.to/3L6465n",
+      "au": "https://amzn.to/3JGEtI2"
+    },
+    "kanji-from-zero-2": {
+      "us": "https://amzn.to/3ygTflc",
+      "uk": "https://amzn.to/3KI32mY",
+      "de": "https://amzn.to/3w6r9Gv",
+      "ca": "https://amzn.to/3w6alQ0",
+      "jp": "https://amzn.to/3vMI8i8",
+      "fr": "https://amzn.to/3yeqIwv",
+      "it": "https://amzn.to/3ML4eaC",
+      "es": "https://amzn.to/3vMHxwS",
+      "au": "https://amzn.to/3Q8shSS"
+    },
+    "korean-from-zero-1": {
+      "us": "https://amzn.to/3GLIJUr",
+      "uk": "https://amzn.to/348yXxO",
+      "de": "https://amzn.to/3rrJgpw",
+      "ca": "https://amzn.to/365kZ0a",
+      "jp": "https://amzn.to/3uppyg2",
+      "fr": "https://amzn.to/3s9UJci",
+      "it": "https://amzn.to/35BdFcf",
+      "es": "https://amzn.to/3opnpwR",
+      "au": "https://amzn.to/3PdNY2L"
+    },
+    "korean-from-zero-2": {
+      "us": "https://amzn.to/3tFIPt4",
+      "uk": "https://amzn.to/3sjpBr3",
+      "de": "https://amzn.to/3ulvV3F",
+      "ca": "https://amzn.to/3svsIvW",
+      "jp": "https://amzn.to/3gmLmk2",
+      "fr": "https://amzn.to/3L633SZ",
+      "it": "https://amzn.to/3rlk7fX",
+      "es": "https://amzn.to/3HuIAVY",
+      "au": "https://amzn.to/3dmAu7H"
+    },
+    "korean-from-zero-3": {
+      "us": "https://amzn.to/3fD7vKA",
+      "uk": "https://amzn.to/3J67viZ",
+      "de": "https://amzn.to/3si11qe",
+      "ca": "https://amzn.to/3Bb8Z8V",
+      "jp": "https://amzn.to/34CFFMo",
+      "fr": "https://amzn.to/3310PDq",
+      "it": "https://amzn.to/3La7wnG",
+      "es": "https://amzn.to/3J2ZXgI",
+      "au": "https://amzn.to/3QwYgvT"
+    }
+  },
+  "localShops": {
+    "japanese-from-zero-1": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780976998129"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Japanese-from-Zero-1-Proven-Techniques-to-Learn-Japanese-for-Students-and-Professionals-Paperback-9780976998129/25655231"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/japanese-from-zero-1?_pos=10&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/japanese-from-zero-2020-1/george-trombley/yukari-takenaka/9780976998129"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/japanese-from-zero-1"
+        }
+      ]
+    },
+    "japanese-from-zero-2": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780976998112"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Japanese-from-Zero-2-Proven-Techniques-to-Learn-Japanese-for-Students-and-Professionals-9780976998112/25655232"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/japanese-from-zero-2?_pos=2&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/japanese-from-zero-2-2015/9780976998112"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/japanese-from-zero-2"
+        }
+      ]
+    },
+    "japanese-from-zero-3": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780976998136"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Japanese-from-Zero-Japanese-From-Zero-3-Proven-Techniques-to-Learn-Japanese-for-Students-and-Professionals-Paperback/24598146"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/japanese-from-zero-3?_pos=3&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/japanese-from-zero-3/george-trombley/yukari-takenaka/9780976998136"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/japanese-from-zero-3"
+        }
+      ]
+    },
+    "japanese-from-zero-4": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780989654500"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Japanese-From-Zero-4-Proven-Techniques-to-Learn-Japanese-for-Students-and-Professionals-9780989654500/29141737"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/japanese-from-zero-4?_pos=4&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/japanese-from-zero-4/george-trombley/yukari-takenaka/9780989654500"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/japanese-from-zero-4"
+        }
+      ]
+    },
+    "japanese-from-zero-5": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780989654555"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Japanese-From-Zero-5-Proven-Techniques-to-Learn-Japanese-for-Students-and-Professionals-Paperback-9780989654555/575850753"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/japanese-from-zero-book-5?_pos=1&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/japanese-from-zero-5-2019/george-trombley/yukari-takenaka/9780989654555"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/japanese-from-zero-5"
+        }
+      ]
+    },
+    "hiragana-from-zero": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780976998174"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Japanese-from-Zero-Hiragana-From-Zero-The-Complete-Japanese-Hiragana-Book-with-Integrated-Workbook-and-Answer-Key-Edition-2-Paperback-9780976998174/49622161"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/hiragana-from-zero-the-complete-hiragana-book?_pos=9&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/hiragana-from-zero/george-trombley/yukari-takenaka/9780976998174"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/hiragana-from-zero"
+        }
+      ]
+    },
+    "katakana-from-zero": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780976998181"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Japanese-from-Zero-Katakana-From-Zero-The-Complete-Japanese-Katakana-Book-with-Integrated-Workbook-and-Answer-Key-Edition-2-Paperback-9780976998181/39392375"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/katakana-from-zero-the-complete-katakana-book?_pos=8&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/katakana-from-zero/george-trombley/yukari-takenaka/9780976998181"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/katakana-from-zero"
+        }
+      ]
+    },
+    "kana-from-zero": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780989654593"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Japanese-Zero-Kana-From-Zero-Proven-Methods-Learn-Hiragana-Katakana-Integrated-Workbook-Answer-Key-Paperback-9780989654593/49120704"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/japanese-kana-from-zero?_pos=11&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/kana-from-zero/yukari-takenaka/george-trombley/9780989654586"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/kana-from-zero-learn-japanese-hiragana-and-katakana-with-integrated-workbook"
+        }
+      ]
+    },
+    "kanji-from-zero-1": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780996786317"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Kanji-from-Zero-1-Proven-Techniques-to-Master-Kanji-Used-by-Students-All-Over-the-World-9780996786317/135245410"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/kanji-from-zero-your-complete-guide-to-learning-the-first-240-kyouiku-kanji?_pos=12&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/kanji-from-zero-2016/george-trombley/yukari-takenaka/9780996786317"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/kanji-from-zero-1"
+        }
+      ]
+    },
+    "korean-from-zero-1": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780989654524"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Korean-From-Zero-1-Master-the-Korean-Language-and-Hangul-Writing-System-with-Integrated-Workbook-and-Online-Course-9780989654524/47698943"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/korean-from-zero-1?_pos=5&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/product/korean-from-zero-2020-1/george-trombley/reed-bullen/9780989654524"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/korean-from-zero-1"
+        }
+      ]
+    },
+    "korean-from-zero-2": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780989654531"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Korean-From-Zero-2-Continue-Mastering-the-Korean-Language-with-Integrated-Workbook-and-Online-Course-Paperback-9780989654531/694198222"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/korean-from-zero-2?_pos=7&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/korean-from-zero-book-2/george-trombley/9780989654531"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/korean-from-zero-2"
+        }
+      ]
+    },
+    "korean-from-zero-3": {
+      "us": [
+        {
+          "label": "Kinokuniya",
+          "url": "https://united-states.kinokuniya.com/bw/9780989654548"
+        },
+        {
+          "label": "Walmart",
+          "url": "https://www.walmart.com/ip/Korean-Zero-From-Zero-3-Continue-Mastering-Language-Integrated-Workbook-Online-Course-Series-3-Edition-2-Paperback-9780989654548/651564464"
+        }
+      ],
+      "uk": [
+        {
+          "label": "Bay Language Books",
+          "url": "https://www.baylanguagebooks.co.uk/products/korean-from-zero-book-3?_pos=6&_sid=b44c5d468&_ss=r"
+        },
+        {
+          "label": "Waterstones",
+          "url": "https://www.waterstones.com/book/korean-from-zero-3-2020/george-trombley/9780989654548"
+        }
+      ],
+      "no": [
+        {
+          "label": "Outland",
+          "url": "https://www.outland.no/korean-from-zero-3"
+        }
+      ]
+    }
+  }
+}

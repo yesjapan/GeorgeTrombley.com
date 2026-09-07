@@ -1,0 +1,352 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { series, seriesOrder, type SeriesKey } from '../data/series';
+import { regions, defaultRegion, buyLinksFor } from '../data/retailers';
+import { site, links as siteLinks } from '../data/site';
+
+const books = (await getCollection('books')).filter((b) => !b.data.draft);
+
+const shelves = seriesOrder
+  .map((key: SeriesKey) => ({
+    key,
+    info: series[key],
+    books: books
+      .filter((b) => b.data.series === key)
+      .sort((a, b) => a.data.order - b.data.order),
+  }))
+  .filter((s) => s.books.length > 0);
+
+// Precompute every book x region combination. All of it is rendered into the
+// page and CSS reveals one region at a time, which keeps the picker working
+// with no JavaScript at all.
+const rows = books.map((book) => ({
+  book,
+  byRegion: Object.fromEntries(
+    regions.map((r) => [r.code, buyLinksFor(book.id, r, book.data.isbn13)]),
+  ),
+}));
+const linksFor = (slug: string, region: string) =>
+  rows.find((r) => r.book.id === slug)?.byRegion[region] ?? [];
+
+// One CSS rule per region, generated so that adding a region to regions[] can
+// never silently produce a tab that shows nothing.
+const regionCss = [
+  '.buy-links { display: none; }',
+  ...regions.map(
+    (r) =>
+      `.buy:has(#region-${r.code}:checked) .buy-links[data-region="${r.code}"] { display: flex; }`,
+  ),
+  // :has() has been baseline since late 2023; if it is missing, fall back to the
+  // default region rather than showing nothing.
+  '@supports not selector(:has(*)) {',
+  `  .buy-links[data-region="${defaultRegion}"] { display: flex; }`,
+  '  .buy-regions { display: none; }',
+  '  .buy-nojs-note { display: block; }',
+  '}',
+].join('\n');
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Get the books — George Trombley',
+  url: new URL('/buy', site.url).href,
+};
+---
+
+<BaseLayout
+  title="Get the books"
+  description="Where to buy the Japanese, Korean, Kanji, Kana, Hangul and Spanish From Zero! books — Amazon in ten countries, plus Barnes & Noble, Waterstones, Kinokuniya and more."
+  jsonLd={jsonLd}
+>
+  <style is:inline set:html={regionCss} />
+
+  <div class="buy">
+    <section class="section wrap-wide">
+      <p class="label">Get the books</p>
+      <h1 class="buy__title">Buy anywhere.</h1>
+      <p class="buy__lede">
+        All {books.length} books, and where to find them where you live. Pick your
+        country and the links change.
+      </p>
+
+      <fieldset class="buy-regions">
+        <legend class="visually-hidden">Choose your country</legend>
+        {
+          regions.map((r) => (
+            <>
+              <input
+                class="buy-regions__input visually-hidden"
+                type="radio"
+                name="region"
+                id={`region-${r.code}`}
+                checked={r.code === defaultRegion}
+              />
+              <label class="buy-regions__label" for={`region-${r.code}`}>
+                {r.label}
+              </label>
+            </>
+          ))
+        }
+      </fieldset>
+
+      <p class="buy-nojs-note">
+        Your browser can&rsquo;t switch countries on this page, so it&rsquo;s
+        showing the {regions.find((r) => r.code === defaultRegion)?.label} links.
+        Searching your local Amazon for the ISBN under each title will find any
+        edition.
+      </p>
+    </section>
+
+    {
+      shelves.map((shelf) => (
+        <section class="section-tight wrap-wide">
+          <div class="section-head">
+            <h2>{shelf.info.title}</h2>
+            <a class="buy__shelf-link" href={`/books#${shelf.key}`}>
+              About these &rarr;
+            </a>
+          </div>
+
+          <ul class="buy-list" role="list">
+            {shelf.books.map((book) => (
+              <li class="buy-row" data-reveal>
+                <a class="buy-row__cover" href={`/books/${book.id}`} tabindex="-1" aria-hidden="true">
+                  {book.data.cover && (
+                    <Image
+                      src={book.data.cover}
+                      alt=""
+                      width={160}
+                      widths={[80, 160]}
+                      sizes="80px"
+                      loading="lazy"
+                    />
+                  )}
+                </a>
+
+                <div class="buy-row__meta">
+                  <h3 class="buy-row__title">
+                    <a href={`/books/${book.id}`}>{book.data.title}</a>
+                  </h3>
+                  {book.data.isbn13 && (
+                    <p class="buy-row__isbn">ISBN {book.data.isbn13}</p>
+                  )}
+                </div>
+
+                <div class="buy-row__shops">
+                  {regions.map((r) => {
+                    const list = linksFor(book.id, r.code);
+                    return (
+                      <div class="buy-links" data-region={r.code}>
+                        {list.length === 0 ? (
+                          <span class="buy-links__none">
+                            No listing yet — try your local Amazon.
+                          </span>
+                        ) : (
+                          list.map((link) => (
+                            <a
+                              class={link.primary ? 'btn btn-seal buy-btn' : 'btn buy-btn'}
+                              href={link.url}
+                              rel="noopener nofollow sponsored"
+                            >
+                              {link.label}
+                            </a>
+                          ))
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+
+    <section class="section wrap-wide">
+      <div class="buy-note">
+        <p class="label">A note on links</p>
+        <p>
+          Amazon links are affiliate links — if you buy through one, I get a small
+          commission at no extra cost to you. Everything else is a plain link. The
+          courses themselves live at{' '}
+          <a href={siteLinks.fromZero}>fromzero.com</a>.
+        </p>
+        <p>
+          Can&rsquo;t find a book where you are? Every title is listed by ISBN
+          above, and searching that number on any bookshop&rsquo;s site will find
+          it.
+        </p>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .buy__title {
+    margin-block: var(--space-2xs) var(--space-md);
+  }
+
+  .buy__lede {
+    max-inline-size: var(--measure);
+    font-size: var(--text-lg);
+    line-height: var(--leading-prose);
+    color: var(--ink-muted);
+  }
+
+  /* ---------- Region picker ---------- */
+  .buy-regions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
+    margin: var(--space-xl) 0 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .buy-regions__label {
+    display: inline-block;
+    padding: 0.5em 0.9em;
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .buy-regions__label:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  .buy-regions__input:checked + .buy-regions__label {
+    background: var(--seal);
+    border-color: var(--seal);
+    color: var(--on-seal);
+  }
+
+  /* The input is visually hidden, so put the focus ring on its label. */
+  .buy-regions__input:focus-visible + .buy-regions__label {
+    outline: 2px solid var(--seal);
+    outline-offset: 3px;
+  }
+
+  .buy-nojs-note {
+    display: none;
+    max-inline-size: var(--measure);
+    margin-block-start: var(--space-md);
+    font-size: var(--text-sm);
+    color: var(--ink-faint);
+  }
+
+  /* ---------- Rows ---------- */
+  .buy__shelf-link {
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .buy__shelf-link:hover {
+    color: var(--seal);
+  }
+
+  .buy-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-block-start: 1px solid var(--rule);
+  }
+
+  .buy-row {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr) minmax(0, auto);
+    gap: var(--space-md);
+    align-items: center;
+    padding-block: var(--space-md);
+    border-block-end: 1px solid var(--rule);
+  }
+
+  .buy-row__cover img {
+    inline-size: 100%;
+    block-size: auto;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-cover);
+  }
+
+  .buy-row__title {
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
+
+  .buy-row__title a {
+    text-decoration: none;
+  }
+
+  .buy-row__title a:hover {
+    color: var(--seal);
+  }
+
+  .buy-row__isbn {
+    margin-block-start: 0.25em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--ink-faint);
+  }
+
+  .buy-links {
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
+    justify-content: flex-end;
+  }
+
+  .buy-btn {
+    padding: 0.45em 0.9em;
+    font-size: var(--text-xs);
+  }
+
+  .buy-links__none {
+    font-size: var(--text-sm);
+    color: var(--ink-faint);
+  }
+
+  /* ---------- Footnote ---------- */
+  .buy-note {
+    max-inline-size: var(--measure);
+    padding: var(--space-lg);
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    color: var(--ink-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-prose);
+  }
+
+  .buy-note p + p {
+    margin-block-start: var(--space-sm);
+  }
+
+  .buy-note .label {
+    margin-block-end: var(--space-2xs);
+  }
+
+  @media (max-width: 46rem) {
+    .buy-row {
+      grid-template-columns: 3rem minmax(0, 1fr);
+      row-gap: var(--space-sm);
+    }
+
+    .buy-row__shops {
+      grid-column: 1 / -1;
+    }
+
+    .buy-links {
+      justify-content: flex-start;
+    }
+  }
+</style>

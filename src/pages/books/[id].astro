@@ -1,0 +1,351 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getSeries } from '../../data/series';
+import { site, publisher } from '../../data/site';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const books = (await getCollection('books')).filter((b) => !b.data.draft);
+  return books.map((book) => ({ params: { id: book.id }, props: { book } }));
+};
+
+interface Props {
+  book: CollectionEntry<'books'>;
+}
+
+const { book } = Astro.props;
+const d = book.data;
+const { Content } = await render(book);
+
+const seriesInfo = getSeries(d.series);
+const authors = [site.name, ...d.coauthors];
+
+// Siblings, so a reader can walk a series without going back to the index.
+const siblings = (await getCollection('books'))
+  .filter((b) => !b.data.draft && b.data.series === d.series)
+  .sort((a, b) => a.data.order - b.data.order);
+const position = siblings.findIndex((b) => b.id === book.id);
+const prev = position > 0 ? siblings[position - 1] : undefined;
+const next = position < siblings.length - 1 ? siblings[position + 1] : undefined;
+
+const retailers = [
+  { label: 'Amazon', href: d.buy.amazon },
+  { label: 'Barnes & Noble', href: d.buy.barnesNoble },
+  { label: 'Bookshop.org', href: d.buy.bookshop },
+  { label: 'FromZero.com', href: d.buy.fromZero },
+].filter((r): r is { label: string; href: string } => Boolean(r.href));
+
+const coverAlt = 'Cover of ' + d.title;
+const missingAlt = d.title + ' — cover image coming soon';
+const bookPath = '/books/' + book.id;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Book',
+  name: d.title,
+  ...(d.subtitle ? { alternateName: d.subtitle } : {}),
+  author: authors.map((name) => ({
+    '@type': 'Person',
+    name,
+    ...(name === site.name ? { url: site.url } : {}),
+  })),
+  publisher: {
+    '@type': 'Organization',
+    name: publisher.textbooks,
+  },
+  ...(d.isbn13 ? { isbn: d.isbn13 } : {}),
+  ...(d.publishedYear ? { datePublished: String(d.publishedYear) } : {}),
+  inLanguage: 'en',
+  description: d.blurb,
+  url: new URL(bookPath, site.url).href,
+  ...(seriesInfo
+    ? { isPartOf: { '@type': 'BookSeries', name: seriesInfo.title } }
+    : {}),
+};
+---
+
+<BaseLayout title={d.title} description={d.blurb} type="book" jsonLd={jsonLd}>
+  <article class="section wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/books">Books</a>
+      <span aria-hidden="true">/</span>
+      <a href={'/books#' + d.series}>{seriesInfo?.title}</a>
+    </nav>
+
+    <div class="book">
+      <div class="book__visual">
+        {
+          d.cover ? (
+            <Image
+              src={d.cover}
+              alt={coverAlt}
+              width={720}
+              widths={[300, 480, 720]}
+              sizes="(max-width: 48rem) 60vw, 340px"
+              loading="eager"
+              fetchpriority="high"
+              class="book__cover"
+            />
+          ) : (
+            <div class="book__cover-missing" role="img" aria-label={missingAlt}>
+              <span class="seal-mark" aria-hidden="true" />
+              <span class="book__cover-missing-title">{d.title}</span>
+            </div>
+          )
+        }
+      </div>
+
+      <div class="book__body">
+        <p class="label">{seriesInfo?.title} &middot; Book {d.order}</p>
+        <h1 class="book__title">{d.title}</h1>
+        {d.subtitle && <p class="book__subtitle">{d.subtitle}</p>}
+
+        <p class="book__blurb">{d.blurb}</p>
+
+        <dl class="book__facts">
+          <div>
+            <dt class="label">{authors.length > 1 ? 'Authors' : 'Author'}</dt>
+            <dd>{authors.join(', ')}</dd>
+          </div>
+          {
+            d.level && (
+              <div>
+                <dt class="label">Level</dt>
+                <dd>{d.level}</dd>
+              </div>
+            )
+          }
+          {
+            d.formats.length > 0 && (
+              <div>
+                <dt class="label">Formats</dt>
+                <dd>{d.formats.join(', ')}</dd>
+              </div>
+            )
+          }
+          {
+            d.isbn13 && (
+              <div>
+                <dt class="label">ISBN</dt>
+                <dd class="book__isbn">{d.isbn13}</dd>
+              </div>
+            )
+          }
+        </dl>
+
+        {
+          retailers.length > 0 && (
+            <div class="book__buy">
+              <p class="label">Get the book</p>
+              <ul class="book__retailers" role="list">
+                {retailers.map((r, i) => (
+                  <li>
+                    <a
+                      class={i === 0 ? 'btn btn-seal' : 'btn'}
+                      href={r.href}
+                      rel="noopener"
+                    >
+                      {r.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <p class="book__buy-more">
+                <a href="/buy">Buying from outside the US? &rarr;</a>
+              </p>
+            </div>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="book__prose prose">
+      <Content />
+    </div>
+
+    {
+      (prev || next) && (
+        <nav class="book__siblings" aria-label="More in this series">
+          <hr class="rule" />
+          <div class="book__siblings-row">
+            {prev ? (
+              <a class="book__sibling" href={'/books/' + prev.id}>
+                <span class="label">Previous</span>
+                <span>{prev.data.title}</span>
+              </a>
+            ) : (
+              <span />
+            )}
+            {next && (
+              <a
+                class="book__sibling book__sibling--next"
+                href={'/books/' + next.id}
+              >
+                <span class="label">Next</span>
+                <span>{next.data.title}</span>
+              </a>
+            )}
+          </div>
+        </nav>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .crumbs {
+    display: flex;
+    gap: var(--space-2xs);
+    font-size: var(--text-sm);
+    color: var(--ink-faint);
+    margin-block-end: var(--space-lg);
+  }
+
+  .crumbs a {
+    text-decoration: none;
+    color: var(--ink-muted);
+  }
+
+  .crumbs a:hover {
+    color: var(--seal);
+  }
+
+  .book {
+    display: grid;
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    gap: var(--space-xl);
+    align-items: start;
+  }
+
+  .book__cover {
+    inline-size: 100%;
+    block-size: auto;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .book__cover-missing {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    aspect-ratio: 2232 / 2907;
+    padding: var(--space-lg);
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-cover);
+  }
+
+  .book__cover-missing-title {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    line-height: var(--leading-tight);
+  }
+
+  .book__title {
+    font-size: var(--text-3xl);
+    margin-block: var(--space-3xs) 0;
+  }
+
+  .book__subtitle {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    color: var(--ink-muted);
+    margin-block-start: var(--space-2xs);
+  }
+
+  .book__blurb {
+    font-size: var(--text-lg);
+    line-height: var(--leading-prose);
+    color: var(--ink-muted);
+    max-inline-size: var(--measure);
+    margin-block-start: var(--space-md);
+  }
+
+  .book__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: var(--space-md);
+    margin-block-start: var(--space-lg);
+    padding-block-start: var(--space-md);
+    border-block-start: 1px solid var(--rule);
+  }
+
+  .book__facts dd {
+    margin: 0.35em 0 0;
+    font-size: var(--text-sm);
+  }
+
+  .book__isbn {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .book__buy {
+    margin-block-start: var(--space-lg);
+  }
+
+  .book__retailers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    list-style: none;
+    padding: 0;
+    margin-block-start: var(--space-xs);
+  }
+
+  .book__buy-more {
+    margin-block-start: var(--space-sm);
+    font-size: var(--text-sm);
+  }
+
+  .book__buy-more a {
+    color: var(--ink-muted);
+    text-decoration: none;
+  }
+
+  .book__buy-more a:hover {
+    color: var(--seal);
+  }
+
+  .book__prose {
+    margin-block-start: var(--space-2xl);
+  }
+
+  .book__siblings {
+    margin-block-start: var(--space-2xl);
+  }
+
+  .book__siblings-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding-block-start: var(--space-md);
+  }
+
+  .book__sibling {
+    display: grid;
+    gap: 0.2em;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+  }
+
+  .book__sibling--next {
+    text-align: end;
+    justify-items: end;
+  }
+
+  @media (max-width: 48rem) {
+    .book {
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+
+    .book__visual {
+      max-inline-size: 15rem;
+    }
+  }
+</style>

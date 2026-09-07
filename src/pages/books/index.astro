@@ -1,0 +1,114 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookCard from '../../components/BookCard.astro';
+import { series, seriesOrder, type SeriesKey } from '../../data/series';
+import { site, sameAs } from '../../data/site';
+
+const all = (await getCollection('books')).filter((b) => !b.data.draft);
+
+// Group into the shelf order declared in src/data/series.ts. A book whose
+// `series` key is not in that map would silently vanish, so surface it loudly
+// at build time instead.
+const unknown = all.filter((b) => !(b.data.series in series));
+if (unknown.length) {
+  throw new Error(
+    `Unknown series key(s) in src/content/books: ${unknown
+      .map((b) => `${b.id} → "${b.data.series}"`)
+      .join(', ')}. Add the series to src/data/series.ts.`,
+  );
+}
+
+const shelves = seriesOrder
+  .map((key: SeriesKey) => ({
+    key,
+    info: series[key],
+    books: all
+      .filter((b) => b.data.series === key)
+      .sort((a, b) => a.data.order - b.data.order),
+  }))
+  .filter((shelf) => shelf.books.length > 0);
+
+const total = all.length;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Books by George Trombley',
+  url: new URL('/books', site.url).href,
+  about: {
+    '@type': 'Person',
+    name: site.name,
+    url: site.url,
+    sameAs,
+  },
+  hasPart: all.map((b) => ({
+    '@type': 'Book',
+    name: b.data.title,
+    url: new URL(`/books/${b.id}`, site.url).href,
+    ...(b.data.isbn13 ? { isbn: b.data.isbn13 } : {}),
+  })),
+};
+---
+
+<BaseLayout
+  title="Books"
+  description={`All ${total} language books by George Trombley — the Japanese, Korean, Kanji, Kana and Spanish From Zero! series.`}
+  jsonLd={jsonLd}
+>
+  <section class="section wrap">
+    <p class="label">The shelf</p>
+    <h1 class="books-hero__title">{total} books, one method.</h1>
+    <p class="books-hero__lede prose">
+      Every one of these is built the same way: nothing is introduced until you
+      have the vocabulary to use it, and the writing system arrives a few
+      characters at a time instead of all at once on page one.
+    </p>
+  </section>
+
+  {
+    shelves.map((shelf) => (
+      <section class="section-tight wrap" id={shelf.key}>
+        <div class="section-head">
+          <h2>{shelf.info.title}</h2>
+          <p class="label">{shelf.books.length} {shelf.books.length === 1 ? 'book' : 'books'}</p>
+        </div>
+
+        <p class="shelf__description">{shelf.info.description}</p>
+
+        <div class="shelf">
+          {shelf.books.map((book, i) => (
+            <BookCard book={book} priority={shelf.key === 'japanese-from-zero' && i < 3} />
+          ))}
+        </div>
+      </section>
+    ))
+  }
+</BaseLayout>
+
+<style>
+  .books-hero__title {
+    margin-block: var(--space-2xs) var(--space-md);
+  }
+
+  .books-hero__lede {
+    font-size: var(--text-lg);
+  }
+
+  .books-hero__cta {
+    margin-block-start: var(--space-lg);
+  }
+
+  .shelf__description {
+    max-inline-size: var(--measure);
+    color: var(--ink-muted);
+    margin-block-end: var(--space-lg);
+  }
+
+  .shelf {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(11rem, 100%), 1fr));
+    gap: var(--space-lg) var(--space-md);
+    align-items: end;
+  }
+</style>

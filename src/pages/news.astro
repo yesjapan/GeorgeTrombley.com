@@ -1,0 +1,118 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const items = (await getCollection('news')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+const rendered = await Promise.all(
+  items.map(async (item) => ({ item, Content: (await render(item)).Content })),
+);
+
+const dateFmt = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<BaseLayout
+  title="News"
+  description="Announcements and updates from George Trombley — new books, releases and appearances."
+>
+  <section class="section wrap">
+    <p class="label">News</p>
+    <h1 class="news__title">Updates</h1>
+    <p class="news__lede prose">
+      New books, releases, and anything else worth a short note.
+    </p>
+  </section>
+
+  <section class="wrap">
+    {
+      rendered.length === 0 ? (
+        <p class="news__empty">Nothing to report just now.</p>
+      ) : (
+        <ol class="news" role="list">
+          {rendered.map(({ item, Content }) => (
+            <li class="news__item" data-reveal>
+              <time class="label news__date" datetime={item.data.date.toISOString()}>
+                {dateFmt.format(item.data.date)}
+              </time>
+
+              <div class="news__body">
+                <h2 class="news__heading">
+                  {item.data.link ? (
+                    <a href={item.data.link}>{item.data.title}</a>
+                  ) : (
+                    item.data.title
+                  )}
+                </h2>
+                <div class="news__text">
+                  <Content />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .news__title {
+    margin-block: var(--space-2xs) var(--space-md);
+  }
+
+  .news__lede {
+    font-size: var(--text-lg);
+  }
+
+  .news__empty {
+    color: var(--ink-faint);
+  }
+
+  .news {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-block-start: 1px solid var(--rule);
+  }
+
+  .news__item {
+    display: grid;
+    grid-template-columns: 10rem minmax(0, 1fr);
+    gap: var(--space-md);
+    padding-block: var(--space-lg);
+    border-block-end: 1px solid var(--rule);
+  }
+
+  .news__date {
+    padding-block-start: 0.4em;
+  }
+
+  .news__heading {
+    font-size: var(--text-2xl);
+  }
+
+  .news__heading a {
+    text-decoration-color: var(--seal);
+  }
+
+  .news__text {
+    margin-block-start: var(--space-2xs);
+    color: var(--ink-muted);
+    max-inline-size: var(--measure);
+    line-height: var(--leading-prose);
+  }
+
+  @media (max-width: 44rem) {
+    .news__item {
+      grid-template-columns: 1fr;
+      gap: var(--space-3xs);
+    }
+  }
+</style>

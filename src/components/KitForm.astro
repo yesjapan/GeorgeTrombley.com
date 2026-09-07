@@ -1,0 +1,177 @@
+---
+import { kitFormId, links } from '../data/site';
+
+interface Props {
+  heading?: string;
+  blurb?: string;
+}
+
+const {
+  heading = 'Occasional news',
+  blurb = 'New books, new videos, and the odd essay. No schedule, no filler, and one click to leave.',
+} = Astro.props;
+
+const action = kitFormId
+  ? `https://app.kit.com/forms/${kitFormId}/subscriptions`
+  : null;
+---
+
+<section class="signup" data-reveal>
+  <div class="signup__inner">
+    <div class="signup__copy">
+      <span class="seal-mark" aria-hidden="true"></span>
+      <h2 class="signup__heading">{heading}</h2>
+      <p class="signup__blurb">{blurb}</p>
+    </div>
+
+    {
+      action ? (
+        <form
+          class="signup__form"
+          id="kitForm"
+          action={action}
+          method="post"
+          data-kit
+        >
+          <label class="visually-hidden" for="kitEmail">
+            Email address
+          </label>
+          <input
+            class="signup__input"
+            id="kitEmail"
+            type="email"
+            name="email_address"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+          />
+          <button class="btn btn-seal" type="submit">Subscribe</button>
+          <p class="signup__status" id="kitStatus" role="status" aria-live="polite" />
+        </form>
+      ) : (
+        /* No Kit list yet. Rather than render a form that goes nowhere, point at
+           the newsletter that does exist. Set kitFormId in src/data/site.ts to
+           switch this block over. */
+        <p class="signup__fallback">
+          <a class="btn btn-seal" href={links.substack} rel="noopener">
+            Read the newsletter on Substack
+          </a>
+        </p>
+      )
+    }
+  </div>
+</section>
+
+{
+  action && (
+    <script>
+      // Progressive enhancement only. With JS off the form posts natively to Kit
+      // and Kit renders its own confirmation page, which is a perfectly good
+      // outcome — this just keeps the reader on the page.
+      const form = document.querySelector('form[data-kit]');
+      const status = document.getElementById('kitStatus');
+
+      form?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const el = form as HTMLFormElement;
+        const button = el.querySelector('button');
+
+        if (button) button.disabled = true;
+        if (status) status.textContent = 'Signing you up…';
+
+        try {
+          const response = await fetch(el.action, {
+            method: 'POST',
+            body: new FormData(el),
+            headers: { accept: 'application/json' },
+          });
+          if (!response.ok) throw new Error(String(response.status));
+          el.reset();
+          if (status) status.textContent = 'Check your inbox to confirm. Thank you.';
+        } catch {
+          if (status) {
+            status.textContent =
+              'That did not go through. Please try again, or email me directly.';
+          }
+        } finally {
+          if (button) button.disabled = false;
+        }
+      });
+    </script>
+  )
+}
+
+<style>
+  .signup {
+    padding-block: var(--space-xl);
+  }
+
+  .signup__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+    gap: var(--space-xl);
+    align-items: center;
+    padding: var(--space-lg);
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+  }
+
+  .signup__heading {
+    font-size: var(--text-2xl);
+    margin-block: var(--space-2xs) var(--space-2xs);
+  }
+
+  .signup__blurb {
+    color: var(--ink-muted);
+    max-inline-size: 34rem;
+  }
+
+  .signup__form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2xs);
+  }
+
+  .signup__input {
+    inline-size: 100%;
+    padding: 0.7em 0.9em;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+  }
+
+  .signup__input::placeholder {
+    color: var(--ink-faint);
+  }
+
+  .signup__input:focus-visible {
+    border-color: var(--seal);
+  }
+
+  .signup__status {
+    grid-column: 1 / -1;
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+    min-block-size: 1.4em;
+  }
+
+  .signup__fallback {
+    margin: 0;
+  }
+
+  @media (max-width: 52rem) {
+    .signup__inner {
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+  }
+
+  @media (max-width: 30rem) {
+    .signup__form {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

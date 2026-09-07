@@ -1,0 +1,136 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { site, links } from '../../data/site';
+
+const posts = (await getCollection('posts'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const dateFmt = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: 'Writing — George Trombley',
+  url: new URL('/writing', site.url).href,
+  author: { '@type': 'Person', name: site.name, url: site.url },
+  blogPost: posts.map((p) => ({
+    '@type': 'BlogPosting',
+    headline: p.data.title,
+    datePublished: p.data.date.toISOString(),
+    url: new URL('/writing/' + p.id, site.url).href,
+  })),
+};
+---
+
+<BaseLayout
+  title="Writing"
+  description="Essays by George Trombley — short, irregular, and mostly about the things he notices rather than the things he knows."
+  jsonLd={jsonLd}
+>
+  <section class="section wrap">
+    <p class="label">Writing</p>
+    <h1 class="writing__title">Essays</h1>
+    <p class="writing__lede prose">
+      Short, irregular, and mostly about what I notice rather than what I know.
+      Subscribe by <a href="/rss.xml">RSS</a> or on{' '}
+      <a href={links.substack}>Substack</a>.
+    </p>
+  </section>
+
+  <section class="wrap">
+    {
+      posts.length === 0 ? (
+        <p class="writing__empty">Nothing published here yet.</p>
+      ) : (
+        <ol class="archive" role="list">
+          {posts.map((post) => (
+            <li class="archive__item" data-reveal>
+              <a class="archive__link" href={'/writing/' + post.id}>
+                <time class="label archive__date" datetime={post.data.date.toISOString()}>
+                  {dateFmt.format(post.data.date)}
+                </time>
+                <div class="archive__body">
+                  <h2 class="archive__heading">{post.data.title}</h2>
+                  <p class="archive__excerpt">{post.data.description}</p>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .writing__title {
+    margin-block: var(--space-2xs) var(--space-md);
+  }
+
+  .writing__lede {
+    font-size: var(--text-lg);
+  }
+
+  .writing__empty {
+    color: var(--ink-faint);
+  }
+
+  .archive {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-block-start: 1px solid var(--rule);
+  }
+
+  .archive__item {
+    border-block-end: 1px solid var(--rule);
+  }
+
+  .archive__link {
+    display: grid;
+    grid-template-columns: 10rem minmax(0, 1fr);
+    gap: var(--space-md);
+    align-items: baseline;
+    padding-block: var(--space-md);
+    text-decoration: none;
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+
+  .archive__link:hover {
+    background: var(--seal-wash);
+  }
+
+  .archive__date {
+    padding-block-start: 0.35em;
+  }
+
+  .archive__heading {
+    font-size: var(--text-2xl);
+    color: var(--ink);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .archive__link:hover .archive__heading {
+    color: var(--seal);
+  }
+
+  .archive__excerpt {
+    margin-block-start: var(--space-2xs);
+    color: var(--ink-muted);
+    max-inline-size: var(--measure);
+  }
+
+  @media (max-width: 44rem) {
+    .archive__link {
+      grid-template-columns: 1fr;
+      gap: var(--space-3xs);
+    }
+  }
+</style>

@@ -1,0 +1,134 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import VideoCard from '../components/VideoCard.astro';
+import { videos, videosUpdated } from '../data/videos';
+
+
+const updated = videosUpdated ? new Date(videosUpdated) : null;
+
+const updatedLabel = updated
+  ? new Intl.DateTimeFormat('en-US', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'UTC',
+    }).format(updated) + ' UTC'
+  : null;
+
+// One card per channel present, for the "where these come from" line.
+const channels = [...new Set(videos.map((v) => v.channelLabel).filter(Boolean))];
+
+const jsonLd =
+  videos.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: 'Recent videos',
+        itemListElement: videos.map((v, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          url: v.url,
+          name: v.title,
+        })),
+      }
+    : undefined;
+---
+
+<BaseLayout
+  title="Videos"
+  description="Recent videos from the From Zero! YouTube channels, refreshed automatically."
+  jsonLd={jsonLd}
+>
+  <section class="section wrap-wide">
+    <p class="label">Videos</p>
+    <h1 class="videos__title">Recent videos</h1>
+
+    {
+      channels.length > 0 && (
+        <p class="videos__lede">
+          Pulled automatically from {channels.join(' and ')}, refreshed every few
+          hours.
+        </p>
+      )
+    }
+
+    {
+      videos.length === 0 && (
+        <div class="videos__empty">
+          <p class="videos__empty-title">No channels configured yet.</p>
+          <p>
+            This page fills itself in from YouTube. To switch it on, add a
+            channel to <code>src/data/youtube-channels.yml</code> — the file has
+            instructions at the top, and{' '}
+            <code>npm run resolve-channel -- @handle</code> converts a handle to
+            the id it needs.
+          </p>
+        </div>
+      )
+    }
+
+    {
+      videos.length > 0 && (
+        <div class="videos__grid">
+          {videos.map((video) => (
+            <VideoCard video={video} />
+          ))}
+        </div>
+      )
+    }
+
+    {
+      updatedLabel && (
+        <p class="videos__updated">Last checked {updatedLabel}.</p>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .videos__title {
+    margin-block: var(--space-2xs) var(--space-md);
+  }
+
+  .videos__lede {
+    max-inline-size: var(--measure);
+    color: var(--ink-muted);
+    font-size: var(--text-lg);
+    margin-block-end: var(--space-xl);
+  }
+
+  .videos__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+    gap: var(--space-lg) var(--space-md);
+  }
+
+  .videos__empty {
+    max-inline-size: var(--measure);
+    padding: var(--space-lg);
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    color: var(--ink-muted);
+  }
+
+  .videos__empty-title {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    color: var(--ink);
+    margin-block-end: var(--space-2xs);
+  }
+
+  .videos__empty code {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--paper-sunken);
+    padding: 0.15em 0.4em;
+    border-radius: var(--radius-sm);
+  }
+
+  .videos__updated {
+    margin-block-start: var(--space-xl);
+    font-size: var(--text-xs);
+    color: var(--ink-faint);
+  }
+</style>

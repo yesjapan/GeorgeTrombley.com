@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" noindex>
+  <section class="section wrap notfound">
+    <p class="label">404</p>
+    <h1 class="notfound__title">This page isn&rsquo;t here.</h1>
+    <p class="notfound__lede">
+      Which happens. The site was rebuilt from scratch, so a link from the old
+      one may well have moved.
+    </p>
+
+    <ul class="notfound__links" role="list">
+      <li><a href="/books">All the books</a></li>
+      <li><a href="/writing">Essays</a></li>
+      <li><a href="/about">About me</a></li>
+      <li><a href="/">Start from the top</a></li>
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .notfound {
+    padding-block: var(--space-3xl);
+  }
+
+  .notfound__title {
+    margin-block: var(--space-2xs) var(--space-md);
+  }
+
+  .notfound__lede {
+    font-size: var(--text-lg);
+    color: var(--ink-muted);
+    max-inline-size: var(--measure);
+  }
+
+  .notfound__links {
+    display: grid;
+    gap: 0.5em;
+    list-style: none;
+    padding: 0;
+    margin-block-start: var(--space-xl);
+    font-size: var(--text-lg);
+    font-family: var(--font-display);
+  }
+
+  .notfound__links a {
+    text-decoration-color: var(--seal);
+  }
+</style>

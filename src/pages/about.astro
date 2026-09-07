@@ -1,0 +1,341 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site, links, sameAs } from '../data/site';
+import authorPhoto from '../assets/author.jpg';
+
+const books = (await getCollection('books')).filter((b) => !b.data.draft);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  mainEntity: {
+    '@type': 'Person',
+    name: site.name,
+    url: site.url,
+    image: new URL('/og.jpg', site.url).href,
+    jobTitle: 'Author and Japanese interpreter',
+    description: site.description,
+    sameAs,
+    knowsLanguage: ['en', 'ja', 'ko', 'es'],
+    worksFor: { '@type': 'Organization', name: 'YesJapan Corporation' },
+  },
+};
+---
+
+<BaseLayout
+  title="About"
+  description="George Trombley spent eighteen years as a professional Japanese interpreter before writing the Japanese From Zero! series. A short account of how that happened."
+  type="profile"
+  jsonLd={jsonLd}
+>
+  <article class="section wrap">
+    <header class="about__head">
+      <div>
+        <p class="label">About</p>
+        <h1 class="about__title">George Trombley</h1>
+        <p class="about__standfirst">
+          Professional Japanese interpreter for eighteen years. Author of {books.length}
+          language books. As of this October, a novelist too.
+        </p>
+      </div>
+
+      <figure class="about__figure">
+        <Image
+          src={authorPhoto}
+          alt="George Trombley"
+          width={640}
+          widths={[280, 420, 640]}
+          sizes="(max-width: 48rem) 50vw, 18rem"
+          loading="eager"
+          class="about__photo"
+        />
+      </figure>
+    </header>
+
+    <div class="about__columns">
+      <!--
+        The prose measure is deliberately short (~34rem) for readability, which
+        at desktop widths left more than half the page empty. The aside fills it
+        with the facts a reader would otherwise have to mine out of the prose,
+        and sticks while the article scrolls past.
+      -->
+      <aside class="about__aside" aria-label="At a glance">
+        <div class="about__aside-inner">
+          <p class="label">At a glance</p>
+          <dl class="about__glance">
+            <div>
+              <dt>Interpreting</dt>
+              <dd>18 years, Japanese &harr; English</dd>
+            </div>
+            <div>
+              <dt>Clients</dt>
+              <dd>Microsoft, IBM, NTT DoCoMo, Lucent Technologies</dd>
+            </div>
+            <div>
+              <dt>Books</dt>
+              <dd>{books.length} across Japanese, Korean, Kanji and Spanish</dd>
+            </div>
+            <div>
+              <dt>Publishers</dt>
+              <dd>YesJapan Corporation &middot; Sandspeck Press</dd>
+            </div>
+            <div>
+              <dt>Fiction</dt>
+              <dd><a href="/fiction">Fate Squared</a>, 29 October 2026</dd>
+            </div>
+          </dl>
+        </div>
+      </aside>
+
+    <div class="prose about__body">
+      <p>
+        I did not set out to write textbooks. I set out to interpret, and for
+        eighteen years that is what I did — simultaneous and consecutive Japanese
+        interpretation for Microsoft, IBM, NTT DoCoMo and Lucent Technologies,
+        in boardrooms and factories and conference halls across North America,
+        Europe, Asia and the Middle East.
+      </p>
+
+      <p>
+        Interpreting is a strange education. You are not just carrying words
+        across; you are carrying intent, register, hesitation, and the thing the
+        speaker meant but did not say. Do it for long enough and you develop a
+        very specific sense of which parts of a language actually carry meaning
+        and which parts a beginner can safely be spared for another six months.
+      </p>
+
+      <h2>Why the books start at zero</h2>
+
+      <p>
+        Every Japanese textbook I picked up made the same demand: memorise
+        forty-six hiragana characters, then forty-six katakana, and then we will
+        begin. It is a reasonable way to organise a writing system and a terrible
+        way to teach a person. Nobody learns to speak by first learning to spell.
+      </p>
+
+      <p>
+        So <em>Japanese From Zero!</em> introduces the writing system a few
+        characters at a time, immediately using each one in sentences built from
+        words the reader already knows. By the end of Book 1 you are reading
+        hiragana without noticing that you learned it. By Book 3 the romaji is
+        gone entirely. It is not a trick — it is just sequencing, which is most
+        of what teaching is.
+      </p>
+
+      <p>
+        The series was written with <strong>Yukari Takenaka</strong> and refined
+        over fifteen years of classroom teaching, which is the part that matters.
+        Every explanation in those books survived contact with real students who
+        did not understand the first three versions of it.
+      </p>
+
+      <h2>Beyond Japanese</h2>
+
+      <p>
+        The method turned out to travel. <em>Korean From Zero!</em> was written
+        with the Korean linguist <strong>Reed Bullen</strong> and a team of
+        native-speaking co-authors — Jiyoon Kim, Sunhee Bong, Sieun An and
+        Myunghee Ham. <em>Kanji From Zero!</em> applied the same sequencing logic
+        to the characters. And <em>Spanish From Zero!</em>, written with{' '}
+        <strong>Hugo Canedo</strong>, took it into a fourth language.
+      </p>
+
+      <p>
+        Alongside the books there is <a href={links.fromZero}>From Zero!</a>, the
+        online course built on the same material, and a long-running video series
+        that has been going about as long as the books have.
+      </p>
+
+      <h2>And now, fiction</h2>
+
+      <p>
+        <a href={links.fateSquared}><em>Fate Squared</em></a> is my first novel,
+        out on 29 October 2026 from Sandspeck Press. It is a thriller, it has
+        nothing to do with language learning, and writing it was the hardest and
+        most enjoyable thing I have done in years.
+      </p>
+
+      <p>
+        I also write <a href={links.substack}>essays</a> — short, irregular, and
+        mostly about the things I notice rather than the things I know.
+      </p>
+      </div>
+    </div>
+
+    <aside class="about__links">
+      <hr class="rule" />
+      <p class="label">Elsewhere</p>
+      <ul role="list">
+        <li><a href={links.fromZero}>fromzero.com</a> — the courses</li>
+        <li><a href={links.fateSquared}>fatesquared.com</a> — the novel</li>
+        <li><a href={links.substack}>Substack</a> — essays</li>
+        <li><a href={links.amazonAuthor}>Amazon author page</a></li>
+        <li><a href={links.goodreads}>Goodreads</a></li>
+      </ul>
+    </aside>
+  </article>
+</BaseLayout>
+
+<style>
+  .about__head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 18rem);
+    gap: var(--space-xl);
+    align-items: center;
+    margin-block-end: var(--space-2xl);
+  }
+
+  .about__title {
+    font-size: var(--text-4xl);
+    margin-block: var(--space-2xs) var(--space-md);
+  }
+
+  .about__standfirst {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    color: var(--ink-muted);
+    max-inline-size: 30ch;
+  }
+
+  .about__figure {
+    position: relative;
+    margin: 0;
+    justify-self: end;
+    inline-size: 100%;
+  }
+
+  .about__figure::after {
+    content: '';
+    position: absolute;
+    inset: var(--space-sm) calc(var(--space-sm) * -1) calc(var(--space-sm) * -1)
+      var(--space-sm);
+    border: 1px solid var(--seal);
+    border-radius: var(--radius);
+    z-index: -1;
+  }
+
+  .about__photo {
+    inline-size: 100%;
+    block-size: auto;
+    border-radius: var(--radius);
+    filter: grayscale(1) contrast(1.04);
+    box-shadow: var(--shadow-cover);
+  }
+
+  /* Prose left, sticky facts right. The aside comes first in the DOM so it is
+     reachable early by keyboard and screen reader, and is moved to the right
+     column visually — the two are independent, so nothing is re-ordered
+     illogically for assistive tech. */
+  .about__columns {
+    display: grid;
+    grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
+    gap: var(--space-2xl);
+    align-items: start;
+  }
+
+  .about__body {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .about__aside {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .about__aside-inner {
+    position: sticky;
+    top: calc(var(--square) * 2.5);
+    padding: var(--space-md);
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+  }
+
+  .about__glance {
+    display: grid;
+    gap: var(--space-sm);
+    margin-block-start: var(--space-sm);
+  }
+
+  .about__glance dt {
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .about__glance dd {
+    margin: 0.25em 0 0;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--ink);
+  }
+
+  .about__glance a {
+    text-decoration-color: var(--seal);
+  }
+
+  .about__links {
+    margin-block-start: var(--space-2xl);
+  }
+
+  .about__links ul {
+    display: grid;
+    gap: 0.5em;
+    list-style: none;
+    padding: 0;
+    margin-block-start: var(--space-sm);
+    font-size: var(--text-sm);
+    color: var(--ink-faint);
+  }
+
+  .about__links a {
+    color: var(--ink);
+    text-decoration-color: var(--seal);
+  }
+
+  /* Below this width the two columns would both be too narrow to read, so the
+     aside drops under the prose and stops sticking. */
+  @media (max-width: 62rem) {
+    .about__columns {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
+
+    .about__body,
+    .about__aside {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    /* Prose first on narrow screens; the facts are a supplement there. */
+    .about__body {
+      order: 1;
+    }
+
+    .about__aside {
+      order: 2;
+    }
+
+    .about__aside-inner {
+      position: static;
+    }
+  }
+
+  @media (max-width: 48rem) {
+    .about__head {
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+
+    .about__figure {
+      order: -1;
+      justify-self: start;
+      max-inline-size: 13rem;
+    }
+  }
+</style>

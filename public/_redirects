@@ -1,0 +1,5 @@
+# Old site paths. Add any that show up in the Cloudflare 404 analytics after launch.
+/index.html      /             301
+/books.html      /books        301
+/about.html      /about        301
+/blog/*          /writing/:splat  301

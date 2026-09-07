@@ -1,0 +1,132 @@
+---
+import { site, links, nav } from '../data/site';
+
+const year = new Date().getFullYear();
+
+const elsewhere = [
+  { label: 'From Zero!', href: links.fromZero, note: 'Courses' },
+  { label: 'Fate Squared', href: links.fateSquared, note: 'The novel' },
+  { label: 'Substack', href: links.substack, note: 'Newsletter' },
+  { label: 'Amazon', href: links.amazonAuthor, note: 'Author page' },
+  { label: 'Goodreads', href: links.goodreads, note: 'Reviews' },
+];
+---
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <hr class="rule" />
+
+    <div class="site-footer__grid">
+      <div class="site-footer__id">
+        <p class="site-footer__name">{site.name}</p>
+        <p class="site-footer__tagline">{site.tagline}</p>
+      </div>
+
+      <nav class="site-footer__col" aria-label="Footer">
+        <h2 class="label">This site</h2>
+        <ul role="list">
+          {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+          <li><a href="/news">News</a></li>
+        </ul>
+      </nav>
+
+      <div class="site-footer__col">
+        <h2 class="label">Elsewhere</h2>
+        <ul role="list">
+          {
+            elsewhere.map((item) => (
+              <li>
+                <a href={item.href} rel="me noopener">
+                  {item.label}
+                </a>
+                <span class="site-footer__note">{item.note}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="site-footer__col">
+        <h2 class="label">Feeds</h2>
+        <ul role="list">
+          <li><a href="/rss.xml">RSS</a></li>
+          <li><a href="/sitemap-index.xml">Sitemap</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="site-footer__legal">
+      <span>&copy; {year} {site.name}. All rights reserved.</span>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding-block: var(--space-xl) var(--space-lg);
+    margin-block-start: var(--space-2xl);
+  }
+
+  .site-footer__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: var(--space-lg);
+    padding-block-start: var(--space-lg);
+  }
+
+  .site-footer__id {
+    grid-column: span 2;
+    min-inline-size: 0;
+  }
+
+  .site-footer__name {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+  }
+
+  .site-footer__tagline {
+    color: var(--ink-faint);
+    font-size: var(--text-sm);
+    margin-block-start: 0.2em;
+  }
+
+  .site-footer__col h2 {
+    margin-block-end: var(--space-xs);
+  }
+
+  .site-footer__col ul {
+    display: grid;
+    gap: 0.45em;
+    list-style: none;
+    padding: 0;
+  }
+
+  .site-footer__col a {
+    font-size: var(--text-sm);
+    text-decoration: none;
+    color: var(--ink-muted);
+  }
+
+  .site-footer__col a:hover {
+    color: var(--seal);
+  }
+
+  .site-footer__note {
+    display: block;
+    font-size: var(--text-2xs);
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+  }
+
+  .site-footer__legal {
+    margin-block-start: var(--space-xl);
+    font-size: var(--text-xs);
+    color: var(--ink-faint);
+  }
+
+  @media (max-width: 40rem) {
+    .site-footer__id {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

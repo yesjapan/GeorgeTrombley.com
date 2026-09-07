@@ -1,0 +1,23 @@
+# Channels polled for the /videos page.
+#
+# This is the ONLY file you edit to change which videos appear. A GitHub Action
+# reads it every six hours, fetches each channel's public RSS feed, and rewrites
+# src/data/videos.json. Cloudflare Pages sees that commit and rebuilds. No API
+# key, no quota, nothing to renew.
+#
+# `id` must be the raw UC… channel id, not an @handle — YouTube's feed endpoint
+# only accepts the id. To convert a handle:
+#
+#     npm run resolve-channel -- @JapaneseFromZero
+#
+# `label` is the channel name shown on the card. `limit` is optional and caps how
+# many of that channel's recent videos are considered (default 10).
+#
+# Uncomment and edit. While every entry is commented out the videos page simply
+# says nothing is configured yet, and the rest of the site is unaffected.
+
+# Resolved for you, but NOT enabled — please confirm it is the channel you want.
+# This one is the Spanish-language "Japonés ¡Desde Cero!" channel; its most
+# recent upload was January 2023.
+# - id: UCgn9K2qbymsgC7iPxpkHOlg
+#   label: Learn Japanese From Zero!

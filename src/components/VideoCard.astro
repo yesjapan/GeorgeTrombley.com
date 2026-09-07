@@ -1,0 +1,139 @@
+---
+import type { Video } from '../data/videos';
+
+interface Props {
+  video: Video;
+}
+
+const { video } = Astro.props;
+
+const published = new Date(video.published);
+const dateLabel = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+}).format(published);
+---
+
+<article class="video" data-reveal>
+  <a class="video__link" href={video.url} rel="noopener">
+    <div class="video__frame">
+      <!--
+        Thumbnails are served by i.ytimg.com and are deliberately NOT run through
+        Astro's image pipeline — they change whenever a video is re-uploaded or
+        its thumbnail is edited, and a build-time copy would go stale silently.
+        hqdefault is 480x360 and always exists; maxres often does not.
+      -->
+      <img
+        class="video__thumb"
+        src={video.thumbnail}
+        alt=""
+        width="480"
+        height="360"
+        loading="lazy"
+        decoding="async"
+        referrerpolicy="no-referrer"
+      />
+      <span class="video__play" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M8 5.5v13l11-6.5z"></path>
+        </svg>
+      </span>
+    </div>
+
+    <h3 class="video__title">{video.title}</h3>
+  </a>
+
+  <p class="video__meta">
+    <time datetime={video.published}>{dateLabel}</time>
+    {video.channelLabel && <span class="video__channel">{video.channelLabel}</span>}
+  </p>
+</article>
+
+<style>
+  .video {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  .video__link {
+    display: grid;
+    gap: var(--space-xs);
+    text-decoration: none;
+  }
+
+  .video__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--paper-sunken);
+    box-shadow: var(--shadow-cover);
+  }
+
+  /* YouTube's 4:3 hqdefault has black bars top and bottom on 16:9 uploads.
+     Scaling up and cropping removes them. */
+  .video__thumb {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    transform: scale(1.35);
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  .video__link:hover .video__thumb {
+    transform: scale(1.42);
+  }
+
+  .video__play {
+    position: absolute;
+    inset-block-end: var(--space-2xs);
+    inset-inline-start: var(--space-2xs);
+    display: grid;
+    place-items: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    border-radius: 50%;
+    background: var(--seal);
+    color: var(--on-seal);
+    padding-inline-start: 2px;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .video__link:hover .video__play {
+    transform: scale(1.1);
+  }
+
+  .video__title {
+    font-size: var(--text-base);
+    font-family: var(--font-body);
+    font-weight: 500;
+    line-height: var(--leading-snug);
+    letter-spacing: 0;
+    color: var(--ink);
+    /* Titles run long; two lines then ellipsis keeps the strip even. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .video__link:hover .video__title {
+    color: var(--seal);
+  }
+
+  .video__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    font-size: var(--text-xs);
+    color: var(--ink-faint);
+  }
+
+  .video__channel::before {
+    content: '·';
+    margin-inline-end: 0.5em;
+  }
+</style>

@@ -1,0 +1,156 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getSeries } from '../data/series';
+
+interface Props {
+  book: CollectionEntry<'books'>;
+  /** Render the cover eagerly — use for anything above the fold. */
+  priority?: boolean;
+}
+
+const { book, priority = false } = Astro.props;
+const { title, cover, level, series: seriesKey } = book.data;
+const seriesInfo = getSeries(seriesKey);
+const href = `/books/${book.id}`;
+---
+
+<article class="book-card" data-reveal>
+  <a class="book-card__link" href={href}>
+    <!--
+      The frame is a fixed box with the image bottom-aligned and contained. The
+      current covers are all 8.5x11 (2232x2907) so they fill it exactly, but a
+      future cover at a different ratio will still sit on the same shelf edge
+      rather than stair-stepping against its neighbours.
+
+      `width` on the Image bounds the non-srcset `src` fallback. Without it
+      Astro points `src` at a full-resolution rendition — 227kB for a card that
+      never displays wider than 480px — which is what a browser ignoring
+      `srcset` would actually download.
+    -->
+    <div class="book-card__frame">
+      {
+        cover ? (
+          <Image
+            src={cover}
+            alt={`Cover of ${title}`}
+            width={480}
+            widths={[220, 340, 480]}
+            sizes="(max-width: 40rem) 42vw, (max-width: 64rem) 26vw, 220px"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchpriority={priority ? 'high' : 'auto'}
+            class="book-card__cover"
+          />
+        ) : (
+          <div class="book-card__placeholder" role="img" aria-label={`${title} — cover image coming soon`}>
+            <span class="seal-mark" aria-hidden="true" />
+            <span class="book-card__placeholder-title">{title}</span>
+            <span class="book-card__placeholder-series">{seriesInfo?.title}</span>
+          </div>
+        )
+      }
+    </div>
+
+    <h3 class="book-card__title">{title}</h3>
+  </a>
+
+  {level && <p class="book-card__meta">{level}</p>}
+</article>
+
+<style>
+  .book-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  .book-card__link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    text-decoration: none;
+  }
+
+  .book-card__frame {
+    display: grid;
+    align-items: end;
+    justify-items: center;
+    /* Every cover is 2232x2907, so the frame matches exactly and nothing
+       letterboxes. Cover-less placeholders inherit the same shape. */
+    aspect-ratio: 2232 / 2907;
+    /* The shelf edge the covers stand on. */
+    border-block-end: 1px solid var(--rule);
+  }
+
+  .book-card__cover {
+    inline-size: auto;
+    max-inline-size: 100%;
+    max-block-size: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-cover);
+    transition: transform var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out);
+  }
+
+  .book-card__link:hover .book-card__cover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* Books whose cover art has not been supplied yet. Set in the site's own type
+     so a half-populated shelf still looks deliberate. */
+  .book-card__placeholder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-xs);
+    inline-size: 100%;
+    block-size: 100%;
+    padding: var(--space-md);
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-cover);
+    transition: transform var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out);
+  }
+
+  .book-card__link:hover .book-card__placeholder {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .book-card__placeholder-title {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-tight);
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  .book-card__placeholder-series {
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-block-start: auto;
+  }
+
+  .book-card__title {
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+    color: var(--ink);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .book-card__link:hover .book-card__title {
+    color: var(--seal);
+  }
+
+  .book-card__meta {
+    font-size: var(--text-xs);
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+  }
+</style>

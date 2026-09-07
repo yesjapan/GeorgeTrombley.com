@@ -1,0 +1,57 @@
+name: Refresh videos
+
+# Rewrites src/data/videos.json from the channels in src/data/youtube-channels.yml
+# and commits it if anything changed. Cloudflare Pages builds on the resulting
+# push, so a new upload appears on the site without anyone touching the repo.
+#
+# NOTE: this commit is made with GITHUB_TOKEN, and pushes made with GITHUB_TOKEN
+# deliberately do not trigger other GitHub Actions workflows. That is fine here
+# because Cloudflare Pages deploys via its own git integration, which does see
+# the push. If hosting ever moves to a GitHub Actions-based deploy (GitHub Pages,
+# say), this workflow will need a deploy key or PAT instead, or the site will
+# quietly stop rebuilding after a refresh.
+
+on:
+  schedule:
+    # Every six hours, at :17 to stay off the top-of-hour stampede.
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+# Two runs writing the same file would conflict; let the newer one win.
+concurrency:
+  group: refresh-videos
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fetch latest videos
+        run: npm run videos
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- src/data/videos.json; then
+            echo "No change to src/data/videos.json — nothing to commit."
+            exit 0
+          fi
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/videos.json
+          git commit -m "Refresh videos from YouTube"
+          git push

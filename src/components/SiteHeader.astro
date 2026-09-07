@@ -1,0 +1,121 @@
+---
+import { site, nav } from '../data/site';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isCurrent = (href: string) => path === href || path.startsWith(href + '/');
+---
+
+<header class="site-header">
+  <div class="wrap-wide site-header__inner">
+    <a class="brand" href="/">
+      <span class="seal-mark" aria-hidden="true"></span>
+      <span class="brand__name">{site.name}</span>
+    </a>
+
+    <nav class="site-nav" aria-label="Primary">
+      {
+        nav.map((item) => (
+          <a
+            href={item.href}
+            class="site-nav__link"
+            aria-current={isCurrent(item.href) ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
+
+<style>
+  /* No hamburger anywhere. Five short links wrap to a second row on narrow
+     screens, which needs no JavaScript and cannot get stuck open. */
+  .site-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(10px) saturate(1.2);
+    border-block-end: 1px solid var(--rule);
+  }
+
+  .site-header__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2xs) var(--space-md);
+    padding-block: var(--space-xs);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55em;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    letter-spacing: -0.015em;
+    white-space: nowrap;
+  }
+
+  .brand:hover {
+    color: var(--ink);
+  }
+
+  .brand .seal-mark {
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .brand:hover .seal-mark {
+    transform: rotate(45deg);
+  }
+
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-md);
+  }
+
+  .site-nav__link {
+    position: relative;
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+    text-decoration: none;
+    padding-block: 0.15em;
+  }
+
+  /* The underline grows from the left rather than fading in. */
+  .site-nav__link::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: -2px;
+    block-size: 1px;
+    background: var(--seal);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .site-nav__link:hover,
+  .site-nav__link[aria-current='page'] {
+    color: var(--ink);
+  }
+
+  .site-nav__link:hover::after,
+  .site-nav__link[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+
+  @media (max-width: 34rem) {
+    .site-header__inner {
+      justify-content: flex-start;
+    }
+    .site-nav {
+      inline-size: 100%;
+      gap: var(--space-xs) var(--space-sm);
+    }
+  }
+</style>
