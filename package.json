@@ -12,7 +12,8 @@
     "videos": "node scripts/fetch-videos.mjs",
     "resolve-channel": "node scripts/resolve-channel.mjs",
     "import-substack": "node scripts/import-substack.mjs",
-    "og": "node scripts/make-og.mjs"
+    "og": "node scripts/make-og.mjs",
+    "check-dns": "node scripts/check-dns.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.12",
