@@ -35,7 +35,7 @@
  * plain ASCII and cannot be mangled by an editor that does not know the font.
  */
 const SPEECH_BUBBLE =
-  '<span class="chat__icon" aria-hidden="true">' + 'F13E' + '</span>';
+  '<span class="chat__icon" aria-hidden="true">' + '\uF13E' + '</span>';
 
 function escapeHtml(value) {
   return value
@@ -62,8 +62,23 @@ function escapeHtml(value) {
 function inlineMarkup(escaped) {
   return escaped
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/__(.+?)__/g, '<u>$1</u>');
+    .replace(/__(.+?)__/g, '<u>$1</u>')
+    .replace(EMOJI, wrapEmoji);
 }
+
+/**
+ * Emoji inside a message are set upright and monochrome, as in the printed
+ * book — Word put those runs in Segoe UI Symbol, whose faces are line drawings,
+ * not the colour emoji font. Two things make that happen on the web:
+ *
+ *   - U+FE0E (variation selector 15) appended to the character asks for the
+ *     text-style glyph rather than the colour one, replacing any U+FE0F that
+ *     asked for the opposite;
+ *   - a span, so CSS can cancel the message's italic and name a monochrome
+ *     font first.
+ */
+const EMOJI = /(\p{Extended_Pictographic})[\uFE0E\uFE0F]?/gu;
+const wrapEmoji = (_, ch) => `<span class="chat__emoji">${ch}\uFE0E</span>`;
 
 /** Typographic quotes and dashes, so message text matches the surrounding prose. */
 function smarten(value) {

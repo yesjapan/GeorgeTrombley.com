@@ -21,6 +21,7 @@ npm run dev          # http://localhost:4321
 | `npm run build` | Production build into `dist/` |
 | `npm run preview` | Serve the built site, to check it before pushing |
 | `npm run check` | TypeScript + Astro diagnostics |
+| `rm -rf node_modules/.astro` | Clear Astro's render cache. Do this if a change to `src/lib/remark-chat.mjs` does not show up in the built chapter — the cache lives here, not in `.astro/` |
 | `npm run videos` | Refresh the video list from YouTube (see below) |
 | `npm run resolve-channel -- @handle` | Turn a YouTube @handle into the `UC…` id |
 | `npm run import-substack` | Pull new Substack posts (also runs on a schedule) |

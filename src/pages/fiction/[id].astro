@@ -263,6 +263,15 @@ const jsonLd = {
     justify-content: flex-end;
   }
 
+  /* Emoji in a message: upright and monochrome, as the book sets them. The
+     variation selector the plugin appends does most of the work; the font
+     list puts a monochrome symbol font first so Windows matches the print. */
+  .chapter__body :global(.chat__emoji) {
+    font-style: normal;
+    font-variant-emoji: text;
+    font-family: 'Segoe UI Symbol', 'Noto Emoji', 'Apple Symbols', sans-serif;
+  }
+
   /* The bubble is a glyph from George's emoji font, not an image. */
   .chapter__body :global(.chat__icon) {
     font-family: 'FromZeroEmoji';
