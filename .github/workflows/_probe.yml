@@ -1,0 +1,29 @@
+name: _probe
+on: { workflow_dispatch: }
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Probe Substack endpoints from a runner
+        run: |
+          node -e "
+          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36';
+          const urls=[
+            ['rss feed        ','https://polyglotgeorge.substack.com/feed'],
+            ['api v1 posts    ','https://polyglotgeorge.substack.com/api/v1/posts?limit=5'],
+            ['api archive     ','https://polyglotgeorge.substack.com/api/v1/archive?sort=new&limit=5'],
+            ['substack.com rss','https://substack.com/feed/@polyglotgeorge'],
+            ['homepage        ','https://polyglotgeorge.substack.com/'],
+          ];
+          (async()=>{for(const [n,u] of urls){
+            for(const [label,h] of [['browserUA',{ 'user-agent':UA, accept:'*/*' }],['noUA',{}]]){
+              try{
+                const r=await fetch(u,{headers:h,signal:AbortSignal.timeout(20000)});
+                const t=await r.text();
+                console.log(n+' '+label.padEnd(10)+' -> '+r.status+'  len='+t.length);
+              }catch(e){console.log(n+' '+label.padEnd(10)+' -> ERR '+e.message.slice(0,40));}
+            }
+          }})();
+          "
