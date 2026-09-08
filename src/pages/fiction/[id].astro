@@ -78,7 +78,7 @@ const jsonLd = {
       <h1 class="chapter__title">{d.title}</h1>
     </header>
 
-    <BookReader label={d.title} author={site.name} title={d.book}>
+    <BookReader label={d.title} title={d.book}>
       <div class="chapter__body">
         <Content />
       </div>
@@ -144,22 +144,25 @@ const jsonLd = {
     margin-block-end: var(--space-2xl);
   }
 
-  /* Set like the printed interior: a text serif, justified, hyphenated.
-     Justification without hyphenation is what produces the rivers of white
-     space that make web text look amateur next to a book, so the two go
-     together — never enable one alone. */
+  /* Set from the manuscript's own paragraph style, 1Text:
+       Times New Roman 10.5pt, justified, 15pt exact leading, 0.25" first-line
+       indent. The page is 6" wide, so 10.5pt is 2.43% of the page width; it is
+       set a little larger than true size because a screen is further from the
+       eye than a book, and clamped so it never gets tiny on a laptop or huge
+     on a monitor. Leading and indent are ratios of the type, so they follow.
+
+     Justification and hyphenation go together — justification alone produces
+     the rivers of white that make web text look amateur beside a printed page.
+     They work here precisely because the measure is the book's 4.5". */
   .chapter__body {
     font-family: 'Times New Roman', Times, Tinos, 'Liberation Serif', serif;
-    font-size: clamp(1.0625rem, 1rem + 0.32vw, 1.25rem);
-    line-height: 1.68;
+    font-size: clamp(14px, 2.9cqw, 19px);
+    line-height: 1.43;
     color: var(--ink);
     text-align: justify;
     text-wrap: pretty;
     hyphens: auto;
     -webkit-hyphens: auto;
-    /* Old-style figures sit better in running prose. */
-    font-variant-numeric: oldstyle-nums;
-    /* Never strand a single line at the foot or head of a column. */
     orphans: 2;
     widows: 2;
   }
@@ -168,27 +171,15 @@ const jsonLd = {
     margin-block-start: 0;
   }
 
-  /* Fiction convention: no blank line between paragraphs, indent instead. The
-     first paragraph of the chapter and the first after a scene break are not
-     indented, which is how books actually set it. */
+  /* 0.25" at 10.5pt. The first paragraph of the chapter and the first after a
+     scene break are not indented, as in the book (1Textnoindent). */
   .chapter__body :global(p + p) {
-    text-indent: 1.6em;
+    text-indent: 1.71em;
     margin-block-start: 0;
   }
 
   .chapter__body :global(hr + p) {
     text-indent: 0;
-  }
-
-  /* Drop cap on the opening paragraph. */
-  .chapter__body :global(> p:first-of-type::first-letter) {
-    float: left;
-    font-family: var(--font-display);
-    font-size: 3.6em;
-    line-height: 0.78;
-    padding-inline-end: 0.08em;
-    padding-block-start: 0.04em;
-    color: var(--seal);
   }
 
   /* Scene break: a centred ornament, not a rule across the column. */
@@ -214,11 +205,16 @@ const jsonLd = {
      Set the way the book does: sender in bold sans with a bubble, the lines
      themselves in sans italic, and the point-of-view character's messages
      ranged right so the two sides of the conversation read at a glance. */
+  /* From the manuscript's Chat / Chat0 styles: Arial 10pt italic, the same
+     15pt leading as the prose; George (Chat) ranged right and indented 0.24"
+     from the right margin, Kim (Chat0) ranged left and indented 0.5" from the
+     left. Those indents are what make the two sides read as two people rather
+     than as text that happens to be aligned differently. */
   .chapter__body :global(.chat) {
     --chat-dot: var(--paper-raised);
-    margin-block: 1.9em;
+    margin-block: 1.43em;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 0.92em;
+    font-size: 0.952em; /* 10pt / 10.5pt */
     line-height: 1.5;
   }
 
@@ -226,16 +222,18 @@ const jsonLd = {
      can strand "Kim" alone at the foot of one page and put what she said at
      the top of the next, which no typesetter would allow. */
   .chapter__body :global(.chat__turn) {
-    margin-block-start: 1.15em;
+    margin-block-start: 1.1em;
     break-inside: avoid;
   }
 
   .chapter__body :global(.chat__turn--in) {
     text-align: left;
+    margin-inline-start: 8.33cqw; /* 0.5" of a 6" page */
   }
 
   .chapter__body :global(.chat__turn--out) {
     text-align: right;
+    margin-inline-end: 4cqw; /* 0.24" */
   }
 
   .chapter__body :global(.chat__who) {
@@ -255,7 +253,7 @@ const jsonLd = {
   }
 
   .chapter__body :global(.chat__icon) {
-    inline-size: 1em;
+    inline-size: 0.85em;
     block-size: auto;
     flex: none;
     color: var(--ink);
@@ -277,7 +275,7 @@ const jsonLd = {
   .chapter__body :global(.chat__msg) {
     margin: 0;
     font-style: italic;
-    color: var(--ink-muted);
+    color: var(--ink);
     text-indent: 0;
     /* Justifying two-word messages looks broken; these range instead. */
     text-align: inherit;

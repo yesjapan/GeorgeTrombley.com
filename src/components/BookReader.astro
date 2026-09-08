@@ -1,44 +1,44 @@
 ---
 /**
- * A paginated, book-like reader.
+ * A paginated reader: one page at a time, like an e-reader.
  *
- * The content is passed in as a slot and stays ordinary DOM — this does not
- * pre-split the text into fixed pages. Instead the prose is flowed into CSS
- * multi-columns inside a fixed-height viewport, so the browser does the
- * pagination and it reflows correctly when the window resizes, the phone
- * rotates, or the reader zooms the text. Turning a page is a horizontal
- * translate of that flow.
+ * The content is passed in as a slot and stays ordinary DOM — nothing is
+ * pre-split into fixed pages. The prose is flowed into CSS columns inside a
+ * fixed-height box, one column per page, and turning is a horizontal translate.
+ * That is why it survives a resize, a rotation or a reader zooming the text.
  *
- * Consequences worth knowing:
- *  - The full text is in the HTML, so it is searchable, indexable and available
- *    to a screen reader as continuous prose regardless of which page is shown.
- *  - With JavaScript off, the reader never initialises and the same markup
- *    renders as a normal scrolling article. That is the default state, not a
- *    fallback bolted on afterwards.
- *  - A "Continuous" toggle switches back to scrolling text at any time, for
- *    anyone who finds pagination annoying. The choice is remembered.
+ * It is deliberately a single page. An earlier version faked an open book with
+ * a two-column spread and a gutter shadow, on the grounds that a browser window
+ * is landscape. What that actually produced was one wide page pretending to be
+ * two, with a beige rectangle and a gradient down the middle. E-readers show
+ * one page for a reason.
+ *
+ *  - The full text is in the HTML: searchable, indexable, and read by a screen
+ *    reader as continuous prose whichever page is showing.
+ *  - With JavaScript off the reader never initialises and the same markup is a
+ *    normal scrolling article. That is the default state, not a fallback.
+ *  - A "Continuous" toggle returns to scrolling text at any time. The choice,
+ *    and the sound setting, are remembered.
  */
 
 interface Props {
-  /** Shown in the reader's accessible name, e.g. "Chapter One". */
+  /** Accessible name for the region, e.g. "Chapter One". */
   label: string;
-  /** Running head on the left-hand page, after the page number. */
-  author: string;
-  /** Running head on the right-hand page, before the page number. */
+  /** Running head, e.g. the book title. */
   title: string;
 }
 
-const { label, author, title } = Astro.props;
+const { label, title } = Astro.props;
 ---
 
 <div class="reader" data-reader>
   <div class="reader__bar">
     <div class="reader__modes" role="group" aria-label="Reading mode">
       <button class="reader__mode" type="button" data-mode="book" aria-pressed="true">
-        Book
+        Pages
       </button>
       <button class="reader__mode" type="button" data-mode="flow" aria-pressed="false">
-        Continuous
+        Scroll
       </button>
     </div>
 
@@ -56,62 +56,39 @@ const { label, author, title } = Astro.props;
   </div>
 
   <div class="reader__stage">
-    <button
-      class="reader__nav reader__nav--prev"
-      type="button"
-      data-prev
-      aria-label="Previous page"
-    >
+    <button class="reader__nav" type="button" data-prev aria-label="Previous page">
       <span aria-hidden="true">‹</span>
     </button>
 
     <div
-      class="reader__book"
+      class="reader__page"
       data-book
       role="region"
       aria-label={`${label}, paginated reader`}
       tabindex="0"
     >
+      <!-- Running head and corner marks, as on the printed page. Decorative;
+           the page counter below carries the folio for assistive tech. -->
+      <div class="reader__marks" aria-hidden="true">
+        <p class="reader__runhead">
+          <span>{title}</span>
+          <span class="reader__runhead-sep">-</span>
+          <span data-folio></span>
+        </p>
+        <span class="reader__corner reader__corner--tl"></span>
+        <span class="reader__corner reader__corner--tr"></span>
+        <span class="reader__corner reader__corner--bl"></span>
+        <span class="reader__corner reader__corner--br"></span>
+      </div>
+
       <div class="reader__viewport" data-viewport>
         <div class="reader__flow" data-flow>
           <slot />
         </div>
       </div>
-
-      <!--
-        Running heads and corner brackets, matching the printed interior.
-        Decorative and duplicated per page, so hidden from assistive tech —
-        the page counter below carries the same information once.
-      -->
-      <div class="reader__marks" aria-hidden="true">
-        <div class="reader__page">
-          <p class="reader__runhead">
-            <span data-folio-left></span>
-            <span class="reader__runhead-sep">-</span>
-            <span>{author}</span>
-          </p>
-          <span class="reader__corners"></span>
-        </div>
-        <div class="reader__page reader__page--recto">
-          <p class="reader__runhead">
-            <span>{title}</span>
-            <span class="reader__runhead-sep">-</span>
-            <span data-folio-right></span>
-          </p>
-          <span class="reader__corners"></span>
-        </div>
-      </div>
-
-      <!-- The gutter shadow that makes two columns read as one open book. -->
-      <div class="reader__spine" aria-hidden="true"></div>
     </div>
 
-    <button
-      class="reader__nav reader__nav--next"
-      type="button"
-      data-next
-      aria-label="Next page"
-    >
+    <button class="reader__nav" type="button" data-next aria-label="Next page">
       <span aria-hidden="true">›</span>
     </button>
   </div>
@@ -123,13 +100,12 @@ const { label, author, title } = Astro.props;
 </div>
 
 <style>
-  /* Until the script says otherwise the content is a normal article, so a
-     no-JS visitor and a screen reader get plain scrolling prose. Every rule
-     that creates the book is scoped under .is-book. */
+  /* Everything that makes this a reader is scoped under .is-ready / .is-book.
+     Before the script runs — or without it — the content is a plain article. */
   .reader__bar,
   .reader__nav,
   .reader__foot,
-  .reader__spine {
+  .reader__marks {
     display: none;
   }
 
@@ -138,8 +114,11 @@ const { label, author, title } = Astro.props;
     display: flex;
   }
 
-  .reader.is-ready.is-book .reader__nav,
-  .reader.is-ready.is-book .reader__spine {
+  .reader.is-ready.is-book .reader__nav {
+    display: grid;
+  }
+
+  .reader.is-ready.is-book .reader__marks {
     display: block;
   }
 
@@ -159,7 +138,7 @@ const { label, author, title } = Astro.props;
   }
 
   .reader__mode {
-    padding: 0.4em 0.9em;
+    padding: 0.4em 0.95em;
     font-size: var(--text-xs);
     letter-spacing: 0.04em;
     color: var(--ink-muted);
@@ -180,7 +159,7 @@ const { label, author, title } = Astro.props;
     border: 1px solid var(--rule);
     border-radius: 999px;
     filter: grayscale(1);
-    opacity: 0.75;
+    opacity: 0.7;
   }
 
   .reader__sound:hover {
@@ -188,10 +167,7 @@ const { label, author, title } = Astro.props;
     border-color: var(--ink);
   }
 
-  .reader__sound .reader__sound-off {
-    display: none;
-  }
-
+  .reader__sound .reader__sound-off,
   .reader__sound[aria-pressed='false'] .reader__sound-on {
     display: none;
   }
@@ -204,15 +180,15 @@ const { label, author, title } = Astro.props;
   .reader__stage {
     display: flex;
     align-items: center;
-    gap: var(--space-2xs);
+    justify-content: center;
+    gap: var(--space-sm);
   }
 
   .reader__nav {
     flex: none;
+    place-items: center;
     inline-size: 2.5rem;
     block-size: 2.5rem;
-    display: grid;
-    place-items: center;
     font-size: var(--text-2xl);
     line-height: 1;
     color: var(--ink-muted);
@@ -233,170 +209,122 @@ const { label, author, title } = Astro.props;
     cursor: default;
   }
 
-  .reader__book {
+  /* ---------- The page ---------- */
+  /* The page is a 6x9 trim, the book's actual size, and every measurement on
+     it is a fraction of its width (cqw) so the proportions hold at any size:
+
+       6" page width            = 100cqw
+       top margin      0.88"    = 14.67cqw
+       bottom margin   0.40"    =  6.67cqw
+       side margins    0.75"    = 12.5cqw  (inside 1" and outside 0.5",
+                                            averaged — a single page has no
+                                            inside or outside)
+       text block      4.5"     = 75cqw wide
+
+     The script sets the page's pixel width; the container query does the
+     rest. */
+  .reader__page {
     position: relative;
-    flex: 1;
-    min-inline-size: 0;
+    flex: none;
+    inline-size: 100%;
+    max-inline-size: 42rem;
+    container-type: inline-size;
   }
 
-  .reader__book:focus-visible {
+  .reader__page:focus-visible {
     outline: 2px solid var(--seal);
     outline-offset: 6px;
   }
 
-  /* ---------- The page surface ---------- */
-  .reader__marks {
-    display: none;
+  .reader {
+    --page-top: 14.67cqw;
+    --page-bottom: 6.67cqw;
+    --page-side: 12.5cqw;
   }
 
-  /* Two half-width cells matching the two text columns, so the running heads
-     and corner brackets land on the pages rather than floating over the spread.
-     The gap is set from JS on the root, the same value the columns use. */
-  .reader.is-ready.is-book .reader__marks {
+  .reader.is-book .reader__viewport {
+    overflow: hidden;
+    aspect-ratio: 2 / 3;
+    box-sizing: border-box;
+    padding: var(--page-top) var(--page-side) var(--page-bottom);
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    /* A page on a desk: a soft drop shadow, heavier at the bottom edge. */
+    box-shadow:
+      0 1px 2px rgba(25, 21, 18, 0.08),
+      0 12px 32px -12px rgba(25, 21, 18, 0.28),
+      0 32px 56px -28px rgba(25, 21, 18, 0.35);
+  }
+
+  .reader.is-book .reader__flow {
+    column-fill: auto;
+    transition: transform var(--dur-slow) var(--ease-in-out);
+    will-change: transform;
+  }
+
+  /* In scroll mode the container is the page width anyway; nothing to undo. */
+
+  /* ---------- Running head and corner marks ----------
+     The running head sits in the 0.88" top margin, and the four brackets mark
+     the corners of the 4.5" x 7.72" text block, as on the printed page. */
+  .reader__marks {
     position: absolute;
     inset: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: var(--reader-gap, 3rem);
-    padding: var(--page-pad-y) var(--page-pad-x);
     pointer-events: none;
   }
 
-  .reader.is-single .reader__marks {
-    grid-template-columns: 1fr;
-  }
-
-  .reader.is-single .reader__page--recto {
-    display: none;
-  }
-
-  .reader__page {
-    position: relative;
-  }
-
   .reader__runhead {
+    position: absolute;
+    inset-block-start: 6.2cqw;
+    inset-inline-end: var(--page-side);
     display: flex;
     gap: 0.9em;
     font-family: var(--reader-head-font, var(--font-body));
-    font-size: var(--text-2xs);
-    font-weight: 600;
+    font-size: 2.1cqw;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--ink-faint);
     white-space: nowrap;
   }
 
-  .reader__page--recto .reader__runhead {
-    justify-content: flex-end;
-  }
-
   .reader__runhead-sep {
     opacity: 0.55;
   }
 
-  /* Corner brackets, all four corners of each text block as in the printed
-     page. Top pair hangs off .reader__page, bottom pair off the empty
-     .reader__corners span — two elements, four pseudo-elements. */
-  .reader__page::before,
-  .reader__page::after,
-  .reader__corners::before,
-  .reader__corners::after {
-    content: '';
+  .reader__corner {
     position: absolute;
-    inline-size: 1.4rem;
-    block-size: 1.4rem;
-    border-color: var(--rule-strong);
-    border-style: solid;
-    opacity: 0.5;
+    inline-size: 3.2cqw;
+    block-size: 3.2cqw;
+    border: 0 solid var(--rule-strong);
+    opacity: 0.45;
   }
 
-  .reader__page::before {
-    inset-block-start: 1.9em;
-    inset-inline-start: 0;
+  .reader__corner--tl {
+    inset-block-start: var(--page-top);
+    inset-inline-start: var(--page-side);
     border-width: 1px 0 0 1px;
   }
 
-  .reader__page::after {
-    inset-block-start: 1.9em;
-    inset-inline-end: 0;
+  .reader__corner--tr {
+    inset-block-start: var(--page-top);
+    inset-inline-end: var(--page-side);
     border-width: 1px 1px 0 0;
   }
 
-  .reader__corners {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  .reader__corners::before {
-    inset-block-end: 0;
-    inset-inline-start: 0;
+  .reader__corner--bl {
+    inset-block-end: var(--page-bottom);
+    inset-inline-start: var(--page-side);
     border-width: 0 0 1px 1px;
   }
 
-  .reader__corners::after {
-    inset-block-end: 0;
-    inset-inline-end: 0;
+  .reader__corner--br {
+    inset-block-end: var(--page-bottom);
+    inset-inline-end: var(--page-side);
     border-width: 0 1px 1px 0;
   }
 
-  .reader {
-    --page-pad-x: var(--space-md);
-    --page-pad-y: var(--space-lg);
-  }
-
-  .reader.is-book .reader__viewport {
-    overflow: hidden;
-    /* Extra top padding reserves the band the running head and brackets sit in. */
-    padding: calc(var(--page-pad-y) + 3.2rem) var(--page-pad-x) var(--page-pad-y);
-    background: var(--paper-raised);
-    border: 1px solid var(--rule);
-    border-radius: var(--radius);
-    /* Two soft inner shadows read as the curve of pages toward the spine. */
-    box-shadow:
-      inset 0 0 40px -18px rgba(25, 21, 18, 0.35),
-      var(--shadow-lift);
-  }
-
-  .reader.is-book .reader__flow {
-    column-fill: auto;
-    column-gap: var(--reader-gap, 3rem);
-    transition: transform var(--dur-slow) var(--ease-in-out);
-    will-change: transform;
-  }
-
-  /* The page container is wide enough to hold a two-page spread, which is far
-     too wide for a single column of prose. In continuous mode, pull the text
-     back to a readable measure. */
-  .reader:not(.is-book) .reader__flow > :global(*) {
-    max-inline-size: 38rem;
-    margin-inline: auto;
-  }
-
-  /* The spine: a soft dark seam down the centre of a two-page spread. */
-  .reader__spine {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-start: 50%;
-    inline-size: 2.5rem;
-    transform: translateX(-50%);
-    pointer-events: none;
-    background: linear-gradient(
-      to right,
-      transparent,
-      rgba(25, 21, 18, 0.05) 35%,
-      rgba(25, 21, 18, 0.11) 50%,
-      rgba(25, 21, 18, 0.05) 65%,
-      transparent
-    );
-  }
-
-  .reader.is-single .reader__spine {
-    display: none;
-  }
-
-  /* The turn: the flow lifts and dips very slightly, which reads as paper
-     moving rather than a slide. Purely decorative. */
+  /* The turn: a brief dip in brightness reads as paper moving. Decorative. */
   .reader.is-turning .reader__flow {
     filter: brightness(0.985);
   }
@@ -405,7 +333,6 @@ const { label, author, title } = Astro.props;
     .reader.is-book .reader__flow {
       transition: none;
     }
-
     .reader.is-turning .reader__flow {
       filter: none;
     }
@@ -416,7 +343,8 @@ const { label, author, title } = Astro.props;
     align-items: baseline;
     justify-content: space-between;
     gap: var(--space-sm);
-    margin-block-start: var(--space-sm);
+    max-inline-size: 38rem;
+    margin: var(--space-sm) auto 0;
     font-size: var(--text-xs);
     color: var(--ink-faint);
   }
@@ -433,15 +361,16 @@ const { label, author, title } = Astro.props;
   .reader:not(.is-book) .reader__hint {
     visibility: hidden;
   }
+
+  @media (max-width: 40rem) {
+    /* The arrows would steal width the page needs; swipe and keys still work. */
+    .reader.is-ready.is-book .reader__nav {
+      display: none;
+    }
+  }
 </style>
 
 <script>
-  interface ReaderState {
-    page: number;
-    pages: number;
-    perView: number;
-  }
-
   const SOUND_KEY = 'gt:reader:sound';
   const MODE_KEY = 'gt:reader:mode';
 
@@ -462,14 +391,12 @@ const { label, author, title } = Astro.props;
   }
 
   /**
-   * A page turn, synthesised rather than sampled: a short burst of noise pushed
-   * through a band-pass that sweeps downward, with a fast attack and a soft
-   * tail. That is essentially what paper is — broadband friction, brightest at
-   * the start. Ships no audio file and needs no licence.
+   * A page turn, synthesised: a short burst of noise through a band-pass that
+   * sweeps downward, fast attack, soft tail — roughly what paper is. Ships no
+   * audio file and raises no licensing question.
    */
   class PageSound {
     private ctx: AudioContext | null = null;
-
     enabled = true;
 
     private ensure(): AudioContext | null {
@@ -487,35 +414,28 @@ const { label, author, title } = Astro.props;
       if (!this.enabled) return;
       const ctx = this.ensure();
       if (!ctx) return;
-      // Browsers start the context suspended until a gesture; turning a page is
-      // one, so this resolves on first use.
       if (ctx.state === 'suspended') void ctx.resume();
 
       const now = ctx.currentTime;
       const dur = 0.26;
-
       const frames = Math.floor(ctx.sampleRate * dur);
       const buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < frames; i++) {
-        // Slight low-pass on the noise itself keeps it from sounding like hiss.
         data[i] = (Math.random() * 2 - 1) * (1 - i / frames) ** 1.4;
       }
 
       const src = ctx.createBufferSource();
       src.buffer = buffer;
-
       const band = ctx.createBiquadFilter();
       band.type = 'bandpass';
       band.Q.value = 0.7;
       band.frequency.setValueAtTime(2600, now);
       band.frequency.exponentialRampToValueAtTime(700, now + dur);
-
       const gain = ctx.createGain();
       gain.gain.setValueAtTime(0.0001, now);
       gain.gain.exponentialRampToValueAtTime(0.16, now + 0.012);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-
       src.connect(band).connect(gain).connect(ctx.destination);
       src.start(now);
       src.stop(now + dur);
@@ -525,21 +445,22 @@ const { label, author, title } = Astro.props;
   function initReader(root: HTMLElement) {
     const viewport = root.querySelector<HTMLElement>('[data-viewport]');
     const flow = root.querySelector<HTMLElement>('[data-flow]');
-    const book = root.querySelector<HTMLElement>('[data-book]');
+    const page = root.querySelector<HTMLElement>('[data-book]');
     const prevBtn = root.querySelector<HTMLButtonElement>('[data-prev]');
     const nextBtn = root.querySelector<HTMLButtonElement>('[data-next]');
     const pagesOut = root.querySelector<HTMLElement>('[data-pages]');
+    const folio = root.querySelector<HTMLElement>('[data-folio]');
     const soundBtn = root.querySelector<HTMLButtonElement>('[data-sound-toggle]');
     const modeBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-mode]')];
-    if (!viewport || !flow || !book) return;
+    if (!viewport || !flow || !page) return;
 
     const sound = new PageSound();
     sound.enabled = readStore(SOUND_KEY) !== 'off';
     soundBtn?.setAttribute('aria-pressed', String(sound.enabled));
 
-    const state: ReaderState = { page: 0, pages: 1, perView: 2 };
+    const state = { page: 0, pages: 1, width: 0 };
 
-    const setMode = (mode: 'book' | 'flow') => {
+    function setMode(mode: 'book' | 'flow') {
       root.classList.toggle('is-book', mode === 'book');
       for (const b of modeBtns) {
         b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
@@ -548,88 +469,71 @@ const { label, author, title } = Astro.props;
       if (mode === 'book') {
         paginate();
       } else {
-        // Hand the column properties back so the prose scrolls normally.
         flow.style.removeProperty('height');
         flow.style.removeProperty('column-width');
+        flow.style.removeProperty('column-gap');
         flow.style.transform = '';
+        page.style.removeProperty('inline-size');
         if (pagesOut) pagesOut.textContent = '';
       }
-    };
+    }
 
-    /** Measure the flow and work out how many pages it holds. */
+    /** Measure the box and let the browser flow the text into pages. */
     function paginate() {
       if (!root.classList.contains('is-book')) return;
 
-      const styles = getComputedStyle(viewport!);
-      const padX =
-        parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
-      const inner = viewport!.clientWidth - padX;
-
-      // Two pages side by side unless the viewport is too narrow to read at.
-      const twoUp = inner >= 640;
-      state.perView = twoUp ? 2 : 1;
-      root.classList.toggle('is-single', !twoUp);
-
-      const gap = twoUp ? Math.min(64, inner * 0.08) : 0;
-      root.style.setProperty('--reader-gap', `${gap}px`);
-
-      const colWidth = twoUp ? (inner - gap) / 2 : inner;
-
-      // Page height so that a whole spread fits on screen once the reader is
-      // scrolled to. Everything that will sit above or below it has to come out
-      // of the budget — the sticky site header, this reader's own toolbar and
-      // page counter — otherwise the book runs off the bottom of the window and
-      // the reader has to scroll AND turn pages, which defeats the point.
-      const stickyHeader = document.querySelector<HTMLElement>('.site-header');
+      // Fit a 6x9 page to the space. Height is the constraint on a landscape
+      // screen: the page has to fit once scrolled to, or the reader would be
+      // scrolling AND turning — the one thing this exists to avoid. Budget the
+      // sticky site header, this toolbar and the page counter out of it, then
+      // derive the width from the 2:3 ratio.
       const chrome =
-        (stickyHeader?.getBoundingClientRect().height ?? 0) +
+        (document.querySelector<HTMLElement>('.site-header')?.getBoundingClientRect()
+          .height ?? 0) +
         (root.querySelector<HTMLElement>('.reader__bar')?.offsetHeight ?? 0) +
         (root.querySelector<HTMLElement>('.reader__foot')?.offsetHeight ?? 0) +
-        48; // breathing room above and below
+        56;
+      const availH = Math.max(480, window.innerHeight - chrome);
 
-      const padY =
-        parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
-      const pageHeight = Math.min(
-        760,
-        Math.max(320, window.innerHeight - chrome - padY),
-      );
+      const navVisible = prevBtn && getComputedStyle(prevBtn).display !== 'none';
+      const navSpace = navVisible ? prevBtn!.offsetWidth * 2 + 40 : 0;
+      const availW = root.clientWidth - navSpace;
 
-      flow.style.height = `${pageHeight}px`;
-      flow.style.columnWidth = `${colWidth}px`;
+      const pageW = Math.floor(Math.min((availH * 2) / 3, availW, 672));
+      const pageH = Math.round(pageW * 1.5);
+      page.style.inlineSize = `${pageW}px`;
 
-      // scrollWidth grows one column at a time once the height is fixed.
-      const step = colWidth + gap;
-      const columns = Math.max(1, Math.round((flow.scrollWidth + gap) / step));
-      state.pages = Math.max(1, Math.ceil(columns / state.perView));
+      // Padding is in cqw, so it resolves only now that the width is set.
+      const styles = getComputedStyle(viewport!);
+      const padX = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+      const padY = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
+      const border =
+        parseFloat(styles.borderTopWidth) + parseFloat(styles.borderBottomWidth);
+      const width = viewport!.clientWidth - padX;
+      const height = pageH - padY - border;
+
+      flow.style.height = `${height}px`;
+      flow.style.columnWidth = `${width}px`;
+      // The gap is the whole side padding, so column N+1 begins exactly at the
+      // far edge of the padding box — outside the clip — rather than in the
+      // margin next to the text. A zero gap put the next page in the margin.
+      flow.style.columnGap = `${padX}px`;
+
+      state.width = width + padX;
+      // n columns span n*W + (n-1)*gap.
+      state.pages = Math.max(1, Math.round((flow.scrollWidth + padX) / (width + padX)));
       state.page = Math.min(state.page, state.pages - 1);
-
       render();
     }
 
     function render() {
-      const styles = getComputedStyle(viewport!);
-      const padX =
-        parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
-      const inner = viewport!.clientWidth - padX;
-      const gap = parseFloat(root.style.getPropertyValue('--reader-gap')) || 0;
-      const spreadWidth = inner + gap;
-
-      flow.style.transform = `translateX(${-state.page * spreadWidth}px)`;
-
+      flow.style.transform = `translateX(${-state.page * state.width}px)`;
       if (prevBtn) prevBtn.disabled = state.page === 0;
       if (nextBtn) nextBtn.disabled = state.page >= state.pages - 1;
       if (pagesOut) {
-        pagesOut.textContent =
-          state.pages > 1 ? `${state.page + 1} / ${state.pages}` : '';
+        pagesOut.textContent = state.pages > 1 ? `${state.page + 1} / ${state.pages}` : '';
       }
-
-      // Folios in the running heads. In a two-up spread the left page is the
-      // odd number and the right its successor, as in a bound book.
-      const leftFolio = state.page * state.perView + 1;
-      const folioLeft = root.querySelector<HTMLElement>('[data-folio-left]');
-      const folioRight = root.querySelector<HTMLElement>('[data-folio-right]');
-      if (folioLeft) folioLeft.textContent = String(leftFolio);
-      if (folioRight) folioRight.textContent = String(leftFolio + 1);
+      if (folio) folio.textContent = String(state.page + 1);
     }
 
     function turn(delta: number) {
@@ -644,13 +548,9 @@ const { label, author, title } = Astro.props;
 
     prevBtn?.addEventListener('click', () => turn(-1));
     nextBtn?.addEventListener('click', () => turn(1));
-
     for (const b of modeBtns) {
-      b.addEventListener('click', () =>
-        setMode(b.dataset.mode === 'flow' ? 'flow' : 'book'),
-      );
+      b.addEventListener('click', () => setMode(b.dataset.mode === 'flow' ? 'flow' : 'book'));
     }
-
     soundBtn?.addEventListener('click', () => {
       sound.enabled = !sound.enabled;
       soundBtn.setAttribute('aria-pressed', String(sound.enabled));
@@ -658,14 +558,9 @@ const { label, author, title } = Astro.props;
       if (sound.enabled) sound.play();
     });
 
-    book.addEventListener('keydown', (event) => {
+    page.addEventListener('keydown', (event) => {
       if (!root.classList.contains('is-book')) return;
-      const keys: Record<string, number> = {
-        ArrowRight: 1,
-        PageDown: 1,
-        ArrowLeft: -1,
-        PageUp: -1,
-      };
+      const keys: Record<string, number> = { ArrowRight: 1, PageDown: 1, ArrowLeft: -1, PageUp: -1 };
       if (event.key in keys) {
         event.preventDefault();
         turn(keys[event.key]);
@@ -680,30 +575,28 @@ const { label, author, title } = Astro.props;
       }
     });
 
-    // Swipe.
+    // Tap the right third of the page to advance, the left third to go back —
+    // the e-reader convention, and what a thumb does on a phone.
+    page.addEventListener('click', (event) => {
+      if (!root.classList.contains('is-book')) return;
+      const rect = page.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      if (x > 0.66) turn(1);
+      else if (x < 0.34) turn(-1);
+    });
+
     let startX = 0;
     let startY = 0;
-    book.addEventListener(
-      'touchstart',
-      (e) => {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-      },
-      { passive: true },
-    );
-    book.addEventListener(
-      'touchend',
-      (e) => {
-        if (!root.classList.contains('is-book')) return;
-        const dx = e.changedTouches[0].clientX - startX;
-        const dy = e.changedTouches[0].clientY - startY;
-        // Ignore mostly-vertical gestures so page scrolling still works.
-        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.6) {
-          turn(dx < 0 ? 1 : -1);
-        }
-      },
-      { passive: true },
-    );
+    page.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+    page.addEventListener('touchend', (e) => {
+      if (!root.classList.contains('is-book')) return;
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.6) turn(dx < 0 ? 1 : -1);
+    }, { passive: true });
 
     let resizeTimer = 0;
     window.addEventListener('resize', () => {
@@ -712,18 +605,14 @@ const { label, author, title } = Astro.props;
     });
 
     root.classList.add('is-ready');
-    const saved = readStore(MODE_KEY);
-    setMode(saved === 'flow' ? 'flow' : 'book');
+    setMode(readStore(MODE_KEY) === 'flow' ? 'flow' : 'book');
   }
 
   for (const el of document.querySelectorAll<HTMLElement>('[data-reader]')) {
-    // Webfonts change the metrics, so measure only once they have settled.
-    // Never leave the reader uninitialised if that promise misbehaves.
+    // Webfonts change the metrics; measure once they have settled, but never
+    // leave the reader uninitialised if that promise misbehaves.
     const start = () => initReader(el);
-    if (document.fonts?.ready) {
-      document.fonts.ready.then(start).catch(start);
-    } else {
-      start();
-    }
+    if (document.fonts?.ready) document.fonts.ready.then(start).catch(start);
+    else start();
   }
 </script>
