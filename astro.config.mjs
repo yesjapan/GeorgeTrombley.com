@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import remarkChat from './src/lib/remark-chat.mjs';
 
 // https://astro.build/config
 export default defineConfig({
@@ -18,6 +19,8 @@ export default defineConfig({
     responsiveStyles: true,
   },
   markdown: {
+    // Turns ```chat fences into the book's text-message blocks.
+    remarkPlugins: [remarkChat],
     shikiConfig: {
       theme: 'github-light',
       wrap: true,

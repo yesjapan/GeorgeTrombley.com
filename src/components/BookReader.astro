@@ -22,9 +22,13 @@
 interface Props {
   /** Shown in the reader's accessible name, e.g. "Chapter One". */
   label: string;
+  /** Running head on the left-hand page, after the page number. */
+  author: string;
+  /** Running head on the right-hand page, before the page number. */
+  title: string;
 }
 
-const { label } = Astro.props;
+const { label, author, title } = Astro.props;
 ---
 
 <div class="reader" data-reader>
@@ -71,6 +75,28 @@ const { label } = Astro.props;
       <div class="reader__viewport" data-viewport>
         <div class="reader__flow" data-flow>
           <slot />
+        </div>
+      </div>
+
+      <!--
+        Running heads and corner brackets, matching the printed interior.
+        Decorative and duplicated per page, so hidden from assistive tech —
+        the page counter below carries the same information once.
+      -->
+      <div class="reader__marks" aria-hidden="true">
+        <div class="reader__page">
+          <p class="reader__runhead">
+            <span data-folio-left></span>
+            <span class="reader__runhead-sep">-</span>
+            <span>{author}</span>
+          </p>
+        </div>
+        <div class="reader__page reader__page--recto">
+          <p class="reader__runhead">
+            <span>{title}</span>
+            <span class="reader__runhead-sep">-</span>
+            <span data-folio-right></span>
+          </p>
         </div>
       </div>
 
@@ -217,9 +243,87 @@ const { label } = Astro.props;
   }
 
   /* ---------- The page surface ---------- */
+  .reader__marks {
+    display: none;
+  }
+
+  /* Two half-width cells matching the two text columns, so the running heads
+     and corner brackets land on the pages rather than floating over the spread.
+     The gap is set from JS on the root, the same value the columns use. */
+  .reader.is-ready.is-book .reader__marks {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--reader-gap, 3rem);
+    padding: var(--page-pad-y) var(--page-pad-x);
+    pointer-events: none;
+  }
+
+  .reader.is-single .reader__marks {
+    grid-template-columns: 1fr;
+  }
+
+  .reader.is-single .reader__page--recto {
+    display: none;
+  }
+
+  .reader__page {
+    position: relative;
+  }
+
+  .reader__runhead {
+    display: flex;
+    gap: 0.9em;
+    font-family: var(--font-body);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+
+  .reader__page--recto .reader__runhead {
+    justify-content: flex-end;
+  }
+
+  .reader__runhead-sep {
+    opacity: 0.55;
+  }
+
+  /* Corner brackets at the top of each text block, as in the printed page. */
+  .reader__page::before,
+  .reader__page::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 1.6em;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border-color: var(--rule-strong);
+    border-style: solid;
+    opacity: 0.55;
+  }
+
+  .reader__page::before {
+    inset-inline-start: 0;
+    border-width: 1px 0 0 1px;
+  }
+
+  .reader__page::after {
+    inset-inline-end: 0;
+    border-width: 1px 1px 0 0;
+  }
+
+  .reader {
+    --page-pad-x: var(--space-md);
+    --page-pad-y: var(--space-lg);
+  }
+
   .reader.is-book .reader__viewport {
     overflow: hidden;
-    padding: var(--space-lg) var(--space-md);
+    /* Extra top padding reserves the band the running head and brackets sit in. */
+    padding: calc(var(--page-pad-y) + 3.2rem) var(--page-pad-x) var(--page-pad-y);
     background: var(--paper-raised);
     border: 1px solid var(--rule);
     border-radius: var(--radius);
@@ -442,7 +546,7 @@ const { label } = Astro.props;
       root.classList.toggle('is-single', !twoUp);
 
       const gap = twoUp ? Math.min(64, inner * 0.08) : 0;
-      flow.style.setProperty('--reader-gap', `${gap}px`);
+      root.style.setProperty('--reader-gap', `${gap}px`);
 
       const colWidth = twoUp ? (inner - gap) / 2 : inner;
 
@@ -482,7 +586,7 @@ const { label } = Astro.props;
       const padX =
         parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
       const inner = viewport!.clientWidth - padX;
-      const gap = parseFloat(flow.style.getPropertyValue('--reader-gap')) || 0;
+      const gap = parseFloat(root.style.getPropertyValue('--reader-gap')) || 0;
       const spreadWidth = inner + gap;
 
       flow.style.transform = `translateX(${-state.page * spreadWidth}px)`;
@@ -493,6 +597,14 @@ const { label } = Astro.props;
         pagesOut.textContent =
           state.pages > 1 ? `${state.page + 1} / ${state.pages}` : '';
       }
+
+      // Folios in the running heads. In a two-up spread the left page is the
+      // odd number and the right its successor, as in a bound book.
+      const leftFolio = state.page * state.perView + 1;
+      const folioLeft = root.querySelector<HTMLElement>('[data-folio-left]');
+      const folioRight = root.querySelector<HTMLElement>('[data-folio-right]');
+      if (folioLeft) folioLeft.textContent = String(leftFolio);
+      if (folioRight) folioRight.textContent = String(leftFolio + 1);
     }
 
     function turn(delta: number) {

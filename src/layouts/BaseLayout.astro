@@ -54,6 +54,12 @@ const props = Astro.props;
     />
 
     <Seo {...props} />
+
+    <!--
+      Page-specific <head> additions. Used by the fiction reader to pull in a
+      book text serif, which would be dead weight on the other 29 pages.
+    -->
+    <slot name="head" />
   </head>
 
   <body>
