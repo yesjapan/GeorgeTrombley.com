@@ -1,5 +1,6 @@
 ---
 title: Chapter One
+heading: 1 - George
 book: Fate Squared
 order: 1
 description: "George Williams is three years from clearing a debt that ended his career. Then a client he has already turned down three times offers triple his rate. The opening chapter of Fate Squared."

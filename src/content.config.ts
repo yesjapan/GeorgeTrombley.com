@@ -114,18 +114,42 @@ const news = defineCollection({
  */
 const fiction = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/fiction' }),
-  schema: z.object({
-    /** e.g. "Chapter One" */
-    title: z.string(),
-    /** Which book this belongs to, e.g. "Fate Squared". */
-    book: z.string(),
-    /** Reading order within the book. */
-    order: z.number(),
-    description: z.string(),
-    /** Where to send a reader who finishes and wants the book. */
-    buyUrl: z.string().url().optional(),
-    draft: z.boolean().default(true),
-  }),
+  schema: ({ image }) =>
+    z.object({
+      /**
+       * `chapter` is a readable excerpt with its own URL. `front` is the book's
+       * front matter — cover, title page, copyright, dedication, and any
+       * prefatory text in the body — shown before the first chapter so opening
+       * the sample feels like opening the book. A front entry has no route.
+       */
+      kind: z.enum(['chapter', 'front']).default('chapter'),
+      /** e.g. "Chapter One", or the book title for a front entry. */
+      title: z.string(),
+      /**
+       * The heading as it appears on the page in the book, when that differs
+       * from the title — Fate Squared names chapters "1 - George".
+       */
+      heading: z.string().optional(),
+      /** Which book this belongs to, e.g. "Fate Squared". */
+      book: z.string(),
+      /** Reading order within the book. Front matter is 0. */
+      order: z.number(),
+      description: z.string(),
+      /** Where to send a reader who finishes and wants the book. */
+      buyUrl: z.string().url().optional(),
+      draft: z.boolean().default(true),
+
+      // ---- front matter only ----
+      cover: image().optional(),
+      subtitle: z.string().optional(),
+      author: z.string().optional(),
+      publisher: z.string().optional(),
+      /** Lines of the copyright page, in order. */
+      copyright: z.array(z.string()).default([]),
+      isbn: z.string().optional(),
+      credits: z.array(z.object({ role: z.string(), name: z.string() })).default([]),
+      dedication: z.string().optional(),
+    }),
 });
 
 export const collections = { books, posts, news, fiction };

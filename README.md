@@ -163,8 +163,11 @@ and nothing to configure.
 
 ### A fiction excerpt
 
-`src/content/fiction/*.md` → `/fiction/<slug>`. The Fate Squared chapter one file
-already exists as an empty template: paste the prose in and set `draft: false`.
+`src/content/fiction/*.md` → `/fiction/<slug>`. Chapter one of Fate Squared is
+converted straight from the Word manuscript by `scripts/import-docx.mjs`, which
+reads the document's paragraph styles (prose, chat left/right, headings) and
+writes the Markdown; run it again after editing the manuscript. The `.docx`
+itself is git-ignored and must stay that way — this repository is public.
 
 **`draft` defaults to `true` in this collection**, unlike everywhere else. A draft
 produces no route at all — nothing to stumble on, nothing indexed — and the
@@ -175,6 +178,23 @@ is nothing to update by hand.
 Prose formatting: blank line between paragraphs, `*asterisks*` for italics, and a
 line containing only `---` for a scene break (renders as a centred `· · ·`, not a
 rule). The drop cap is automatic.
+
+#### Front matter
+
+A book does not open on chapter one, so neither does the sample. An entry with
+`kind: front` (see `fate-squared-front.md`) supplies the cover, title page,
+copyright page, dedication and any prefatory text — the author's note and
+foreword live in its body, and each `##` heading there starts a fresh page.
+The reader shows all of it before the first chapter only; later chapters open
+on their own page. Front pages carry no page number; folio 1 is the chapter
+opener, as in the book. A front entry has no URL of its own.
+
+Set `heading` on a chapter when the heading printed in the book differs from
+the title used in navigation ("1 - George" vs "Chapter One").
+
+Keep notes about what was left out of the manuscript in YAML comments in the
+frontmatter, never in an HTML comment in the body: Markdown copies HTML
+comments into the page source verbatim.
 
 ### The book reader
 
@@ -216,6 +236,26 @@ show a single page for a reason.
 **The page-turn sound is synthesised with Web Audio** — a noise burst through a
 band-pass sweeping down. To use a real recording, replace `PageSound.play()` in
 `src/components/BookReader.astro` with an `Audio` element.
+
+### Keeping the sample out of search and AI crawlers
+
+The excerpt is for people who arrive at it, not for indexes or training sets,
+so it is fenced off four ways, each covering a gap in the others:
+
+- `<meta name="robots" content="noindex, nofollow">` on the chapter page
+  (the `noindex` prop on `BaseLayout`).
+- `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet` from `public/_headers`
+  on `/fiction/*/`, for crawlers that read headers before markup.
+- The chapter routes are left out of the sitemap (`astro.config.mjs`).
+- `public/robots.txt` disallows `/fiction/` for the known AI crawlers (GPTBot,
+  ClaudeBot, CCBot, Google-Extended, Bytespider, PerplexityBot and the rest).
+  Googlebot is deliberately *not* disallowed there: a crawler that cannot fetch
+  the page never sees the noindex on it.
+
+None of this stops a person copying text, and nothing on the web can. What
+does help is Cloudflare's **Block AI scrapers and crawlers** toggle (Security →
+Bots), which refuses those user agents at the edge regardless of what
+robots.txt asks. That is a dashboard setting, not something in this repo.
 
 ### A news item
 

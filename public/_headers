@@ -40,3 +40,9 @@
 # `public, max-age=0, must-revalidate`, which is what we want — the pages are
 # rewritten on every deploy and /videos changes on a cron — and adding our own
 # rule here would collide with the per-path rules above.
+
+# Sample chapters: not for search indexes, caches, snippets or AI overviews.
+# The same directives are in a <meta name="robots"> on those pages; the header
+# covers clients that read headers and not markup.
+/fiction/:excerpt/
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet

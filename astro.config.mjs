@@ -11,7 +11,9 @@ export default defineConfig({
     sitemap({
       // Draft posts are filtered out of the routes themselves, but the news
       // and 404 routes carry no standalone value in a sitemap either.
-      filter: (page) => !page.includes('/404'),
+      // Sample chapters are noindex; listing them in the sitemap would send a
+      // mixed signal. /fiction/ itself stays.
+      filter: (page) => !page.includes('/404') && !/\/fiction\/[^/]+\/?$/.test(page),
     }),
   ],
   image: {

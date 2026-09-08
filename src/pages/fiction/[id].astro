@@ -1,14 +1,18 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BookReader from '../../components/BookReader.astro';
-import { site, links, publisher } from '../../data/site';
+import { links } from '../../data/site';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   // Drafts produce no route at all, so an unfinished chapter has no URL to be
-  // stumbled on or indexed.
-  const excerpts = (await getCollection('fiction')).filter((e) => !e.data.draft);
+  // stumbled on. Front-matter entries have no route either — they are shown
+  // inside the first chapter's reader.
+  const excerpts = (await getCollection('fiction')).filter(
+    (e) => !e.data.draft && e.data.kind === 'chapter',
+  );
   return excerpts.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
 };
 
@@ -24,46 +28,57 @@ const { Content } = await render(entry);
 const words = (entry.body ?? '').split(/\s+/).filter(Boolean).length;
 const minutes = Math.max(1, Math.round(words / 240));
 
-const siblings = (await getCollection('fiction'))
-  .filter((e) => !e.data.draft && e.data.book === d.book)
+const chapters = (await getCollection('fiction'))
+  .filter((e) => !e.data.draft && e.data.kind === 'chapter' && e.data.book === d.book)
   .sort((a, b) => a.data.order - b.data.order);
-const position = siblings.findIndex((e) => e.id === entry.id);
-const next = position > -1 && position < siblings.length - 1 ? siblings[position + 1] : undefined;
+const position = chapters.findIndex((e) => e.id === entry.id);
+const next =
+  position > -1 && position < chapters.length - 1 ? chapters[position + 1] : undefined;
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Chapter',
-  name: d.title,
-  isPartOf: {
-    '@type': 'Book',
-    name: d.book,
-    author: { '@type': 'Person', name: site.name, url: site.url },
-    publisher: { '@type': 'Organization', name: publisher.fiction },
-  },
-  author: { '@type': 'Person', name: site.name, url: site.url },
-  description: d.description,
-  inLanguage: 'en',
-};
+// The book's front matter — cover, title page, copyright, dedication, and any
+// prefatory text — goes before the FIRST chapter only, so opening the sample
+// feels like opening the book. Later chapters start on their own page.
+const front =
+  position === 0
+    ? (await getCollection('fiction')).find(
+        (e) => e.data.kind === 'front' && e.data.book === d.book && !e.data.draft,
+      )
+    : undefined;
+const FrontContent = front ? (await render(front)).Content : null;
+const f = front?.data;
 ---
 
+<!--
+  noindex: the sample is for readers who arrive here, not for search engines,
+  caches or AI overviews. The Seo component emits the robots meta; _headers
+  adds the matching X-Robots-Tag; the sitemap filter leaves these routes out.
+  Structured data is dropped for the same reason — no point describing a page
+  to indexers that are asked not to index it.
+-->
 <BaseLayout
   title={`${d.title} — ${d.book}`}
   description={d.description}
   type="article"
-  jsonLd={jsonLd}
+  noindex
 >
   <!--
     Fonts taken from the manuscript itself rather than guessed: the .docx sets
     body prose in Times New Roman 10.5pt, headings in FateSquaredR, and inherits
     Arial for the chat. Times and Arial are on effectively every device, so the
-    only webfont needed is George's own display face — one 18KB file, and no
-    Google Fonts request at all.
+    only self-hosted webfonts are George's own faces.
   -->
   <style slot="head" is:inline>
     @font-face {
       font-family: 'FateSquared';
       src: url('/fonts/FateSquared-Regular.woff2') format('woff2');
       font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'FateSquared';
+      src: url('/fonts/FateSquared-Bold.woff2') format('woff2');
+      font-weight: 700;
       font-style: normal;
       font-display: swap;
     }
@@ -97,13 +112,80 @@ const jsonLd = {
     <header class="chapter__head">
       <a class="chapter__back" href="/fiction">&larr; {d.book}</a>
       <p class="label chapter__meta">
-        {d.book} &middot; {minutes} min read
+        {d.book} &middot; {d.title} &middot; {minutes} min read
       </p>
-      <h1 class="chapter__title">{d.title}</h1>
     </header>
 
     <BookReader label={d.title} title={d.book}>
-      <div class="chapter__body">
+      {
+        f?.cover && (
+          <Image
+            slot="cover"
+            src={f.cover}
+            alt={`Cover of ${d.book}`}
+            width={720}
+            widths={[480, 720, 1030]}
+            sizes="(max-width: 48rem) 90vw, 42rem"
+            loading="eager"
+          />
+        )
+      }
+
+      {
+        f && (
+          <div slot="front" class="front">
+            <!-- Title page: the book's lockup, set in its own face rather than
+                 as the PNG so it stays crisp and reads in dark mode. -->
+            <section class="reader__fixed front__title" aria-label="Title page">
+              <p class="front__title-main">{f.title}</p>
+              <p class="front__title-by">
+                {f.subtitle && <span class="front__title-sub">{f.subtitle} by</span>}
+                <span class="front__title-author">{f.author}</span>
+              </p>
+              {f.publisher && <p class="front__title-pub">{f.publisher}</p>}
+            </section>
+
+            <section class="reader__fixed front__copyright" aria-label="Copyright">
+              <div class="front__copyright-body">
+                {f.copyright.map((line, i) => (
+                  <p class={i === 0 ? 'front__copyright-line front__copyright-line--first' : 'front__copyright-line'}>
+                    {line}
+                  </p>
+                ))}
+                {f.isbn && <p class="front__copyright-line">ISBN: {f.isbn}</p>}
+                {f.credits.length > 0 && (
+                  <div class="front__credits">
+                    {f.credits.map((c) => (
+                      <p class="front__copyright-line">
+                        {c.role}: {c.name}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {
+              f.dedication && (
+                <section class="reader__fixed front__dedication" aria-label="Dedication">
+                  <p>{f.dedication}</p>
+                </section>
+              )
+            }
+
+            {
+              FrontContent && (
+                <div class="chapter__body front__prose">
+                  <FrontContent />
+                </div>
+              )
+            }
+          </div>
+        )
+      }
+
+      <div class="chapter__body" data-chapter-start>
+        <h2 class="chapter__opener">{d.heading ?? d.title}</h2>
         <Content />
       </div>
     </BookReader>
@@ -134,15 +216,13 @@ const jsonLd = {
 </BaseLayout>
 
 <style>
-  /* A reading column, narrower than the rest of the site and centred — this is
-     the one page people stay on for ten minutes rather than scan. */
   .chapter {
     /* The manuscript sets Heading1 in FateSquaredR; the running heads and
-       chapter title follow it. */
+       chapter openers follow it. */
     --reader-head-font: 'FateSquared', var(--font-body);
     width: min(100% - var(--gutter) * 2, 64rem);
     margin-inline: auto;
-    padding-block: var(--space-2xl);
+    padding-block: var(--space-xl) var(--space-2xl);
   }
 
   .chapter__back {
@@ -150,30 +230,24 @@ const jsonLd = {
     font-size: var(--text-sm);
     color: var(--ink-muted);
     text-decoration: none;
-    margin-block-end: var(--space-xl);
+    margin-block-end: var(--space-sm);
   }
 
   .chapter__back:hover {
     color: var(--seal);
   }
 
-  .chapter__title {
-    font-family: 'FateSquared', var(--font-display);
-    letter-spacing: 0.01em;
-    font-size: var(--text-3xl);
-    margin-block: var(--space-2xs) 0;
-  }
-
   .chapter__head {
-    margin-block-end: var(--space-2xl);
+    margin-block-end: var(--space-lg);
   }
 
-  /* Set from the manuscript's own paragraph style, 1Text:
-       Times New Roman 10.5pt, justified, 15pt exact leading, 0.25" first-line
-       indent. The page is 6" wide, so 10.5pt is 2.43% of the page width; it is
-       set a little larger than true size because a screen is further from the
-       eye than a book, and clamped so it never gets tiny on a laptop or huge
-     on a monitor. Leading and indent are ratios of the type, so they follow.
+  /* ---------- Body prose ----------
+     From the manuscript's paragraph style, 1Text: Times New Roman 10.5pt,
+     justified, 15pt exact leading, 0.25" first-line indent. The page is 6"
+     wide, so 10.5pt is 2.43% of the page width; it is set a little larger than
+     true size because a screen is further from the eye than a book, and
+     clamped so it never gets tiny on a laptop or huge on a monitor. Leading and
+     indent are ratios of the type, so they follow.
 
      Justification and hyphenation go together — justification alone produces
      the rivers of white that make web text look amateur beside a printed page.
@@ -202,8 +276,23 @@ const jsonLd = {
     margin-block-start: 0;
   }
 
-  .chapter__body :global(hr + p) {
+  .chapter__body :global(hr + p),
+  .chapter__body :global(h2 + p) {
     text-indent: 0;
+  }
+
+  /* Chapter opener, from Heading1: FateSquaredR at 20pt, i.e. 1.9x the body.
+     Books drop the opener some way down the page; the manuscript relies on
+     spacing for this, so the distance is a judgement. */
+  .chapter__opener,
+  .chapter__body :global(h2) {
+    font-family: 'FateSquared', var(--font-display);
+    font-weight: 400;
+    font-size: 1.9em;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    text-align: left;
+    margin-block: 14cqw 1.4em;
   }
 
   /* Scene break: a centred ornament, not a rule across the column. */
@@ -224,12 +313,127 @@ const jsonLd = {
     font-style: italic;
   }
 
+  /* ---------- Front matter ---------- */
+  .front__prose :global(h2) {
+    /* Each heading in the prefatory text starts a fresh page. */
+    break-before: column;
+  }
+
+  /* Title page: the lockup, set as in the book — the title big and bold in
+     FateSquared, the byline beneath in the regular weight — centred, with the
+     publisher's name at the foot. */
+  .front__title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: 'FateSquared', var(--font-display);
+    color: var(--ink);
+  }
+
+  .front__title-main {
+    font-weight: 700;
+    font-size: 17cqw;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    margin-block-start: -12cqw;
+  }
+
+  .front__title-by {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0 0.45em;
+    margin-block-start: 5cqw;
+    font-size: 3.2cqw;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .front__title-author {
+    font-size: 1.55em;
+    letter-spacing: 0.08em;
+  }
+
+  .front__title-pub {
+    position: absolute;
+    inset-block-end: 0;
+    font-size: 2.3cqw;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .front__title {
+    position: relative;
+  }
+
+  /* Scrolling text has no page to be proportional to; hold the lockup to a
+     sensible size there. */
+  :global(.reader:not(.is-book)) .front__title-main {
+    font-size: clamp(2.75rem, 10cqw, 4.5rem);
+  }
+
+  /* Copyright page: small type at the foot, as in most books. */
+  .front__copyright {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    font-family: 'Times New Roman', Times, Tinos, 'Liberation Serif', serif;
+    font-size: 0.78em;
+    line-height: 1.45;
+    color: var(--ink-muted);
+    text-align: left;
+    hyphens: none;
+  }
+
+  .front__copyright-line {
+    text-indent: 0 !important;
+  }
+
+  .front__copyright-line + .front__copyright-line {
+    margin-block-start: 0.9em;
+  }
+
+  .front__copyright-line--first {
+    text-align: center;
+    color: var(--ink);
+    margin-block-end: 1.4em;
+  }
+
+  .front__credits {
+    margin-block-start: 1.4em;
+  }
+
+  .front__credits .front__copyright-line + .front__copyright-line {
+    margin-block-start: 0.2em;
+  }
+
+  /* Dedication: centred on an otherwise empty page. */
+  .front__dedication {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: 'Times New Roman', Times, Tinos, 'Liberation Serif', serif;
+    font-style: italic;
+    font-size: 1.05em;
+    line-height: 1.6;
+    color: var(--ink);
+    padding-inline: 8%;
+    text-wrap: balance;
+  }
+
+  .front__dedication :global(p) {
+    text-indent: 0;
+    margin-block-start: -8cqw;
+  }
+
   /* ---------- Text-message exchanges ----------
-     Written in markdown as a ```chat fence; see src/lib/remark-chat.mjs.
-     Set the way the book does: sender in bold sans with a bubble, the lines
-     themselves in sans italic, and the point-of-view character's messages
-     ranged right so the two sides of the conversation read at a glance. */
-  /* From the manuscript's Chat / Chat0 styles: Arial 10pt italic, the same
+     From the manuscript's Chat / Chat0 styles: Arial 10pt italic, the same
      15pt leading as the prose; George (Chat) ranged right and indented 0.24"
      from the right margin, Kim (Chat0) ranged left and indented 0.5" from the
      left. Those indents are what make the two sides read as two people rather
@@ -278,11 +482,10 @@ const jsonLd = {
 
   /* Emoji in a message: upright and monochrome, as the book sets them. The
      variation selector the plugin appends does most of the work; the font
-     list puts a monochrome symbol font first so Windows matches the print. */
+     list puts a monochrome face first so every platform matches the print. */
   .chapter__body :global(.chat__emoji) {
     font-style: normal;
     font-variant-emoji: text;
-    /* Noto Emoji first, so every platform draws the same monochrome face. */
     font-family: 'Noto Emoji', 'Segoe UI Symbol', sans-serif;
   }
 
@@ -320,8 +523,10 @@ const jsonLd = {
     hyphens: none;
   }
 
+  /* ---------- After the reader ---------- */
   .chapter__end {
-    margin-block-start: var(--space-2xl);
+    max-inline-size: 42rem;
+    margin: var(--space-2xl) auto 0;
   }
 
   .chapter__end-note {

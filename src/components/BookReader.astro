@@ -1,24 +1,27 @@
 ---
 /**
- * A paginated reader: one page at a time, like an e-reader.
+ * A paginated reader: one page at a time, like an e-reader, sized to the
+ * book's 6x9 trim.
  *
- * The content is passed in as a slot and stays ordinary DOM — nothing is
+ * The content is passed in as slots and stays ordinary DOM — nothing is
  * pre-split into fixed pages. The prose is flowed into CSS columns inside a
- * fixed-height box, one column per page, and turning is a horizontal translate.
- * That is why it survives a resize, a rotation or a reader zooming the text.
+ * fixed-height box, one column per page, and turning is a horizontal
+ * translate. That is why it survives a resize, a rotation or a reader zooming.
  *
- * It is deliberately a single page. An earlier version faked an open book with
- * a two-column spread and a gutter shadow, on the grounds that a browser window
- * is landscape. What that actually produced was one wide page pretending to be
- * two, with a beige rectangle and a gradient down the middle. E-readers show
- * one page for a reason.
+ * Slots:
+ *   cover   — the cover art. Shown as page 0, edge to edge, no running head.
+ *   front   — front matter: title page, copyright, dedication, prefatory text.
+ *             Fixed pages in here use .reader__fixed and fill exactly one page;
+ *             prose flows normally. Nothing before the chapter carries a folio.
+ *   default — the chapter. Its root element carries data-chapter-start, which
+ *             is where page numbering begins.
  *
- *  - The full text is in the HTML: searchable, indexable, and read by a screen
- *    reader as continuous prose whichever page is showing.
+ *  - The full text is in the HTML: searchable and read by a screen reader as
+ *    continuous prose whichever page is showing.
  *  - With JavaScript off the reader never initialises and the same markup is a
  *    normal scrolling article. That is the default state, not a fallback.
- *  - A "Continuous" toggle returns to scrolling text at any time. The choice,
- *    and the sound setting, are remembered.
+ *  - A "Scroll" toggle returns to scrolling text at any time. The choice, and
+ *    the sound setting, are remembered.
  */
 
 interface Props {
@@ -29,9 +32,10 @@ interface Props {
 }
 
 const { label, title } = Astro.props;
+const hasCover = Astro.slots.has('cover');
 ---
 
-<div class="reader" data-reader>
+<div class="reader" data-reader data-has-cover={hasCover ? '' : undefined}>
   <div class="reader__bar">
     <div class="reader__modes" role="group" aria-label="Reading mode">
       <button class="reader__mode" type="button" data-mode="book" aria-pressed="true">
@@ -67,6 +71,14 @@ const { label, title } = Astro.props;
       aria-label={`${label}, paginated reader`}
       tabindex="0"
     >
+      {
+        hasCover && (
+          <div class="reader__cover" data-cover>
+            <slot name="cover" />
+          </div>
+        )
+      }
+
       <!-- Running head and corner marks, as on the printed page. Decorative;
            the page counter below carries the folio for assistive tech. -->
       <div class="reader__marks" aria-hidden="true">
@@ -83,6 +95,7 @@ const { label, title } = Astro.props;
 
       <div class="reader__viewport" data-viewport>
         <div class="reader__flow" data-flow>
+          <slot name="front" />
           <slot />
         </div>
       </div>
@@ -209,9 +222,9 @@ const { label, title } = Astro.props;
     cursor: default;
   }
 
-  /* ---------- The page ---------- */
-  /* The page is a 6x9 trim, the book's actual size, and every measurement on
-     it is a fraction of its width (cqw) so the proportions hold at any size:
+  /* ---------- The page ----------
+     A 6x9 trim, the book's actual size. Every measurement on it is a fraction
+     of its width (cqw) so the proportions hold at any size:
 
        6" page width            = 100cqw
        top margin      0.88"    = 14.67cqw
@@ -221,8 +234,7 @@ const { label, title } = Astro.props;
                                             inside or outside)
        text block      4.5"     = 75cqw wide
 
-     The script sets the page's pixel width; the container query does the
-     rest. */
+     The script sets the page's pixel width; the container query does the rest. */
   .reader__page {
     position: relative;
     flex: none;
@@ -263,15 +275,89 @@ const { label, title } = Astro.props;
     will-change: transform;
   }
 
-  /* In scroll mode the container is the page width anyway; nothing to undo. */
+  /* ---------- The cover ----------
+     Page 0. Laid over the whole page — no margins, no running head — because a
+     cover bleeds to the trim. The flow's pages start at 1. */
+  .reader.is-book .reader__cover {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow:
+      0 1px 2px rgba(25, 21, 18, 0.08),
+      0 12px 32px -12px rgba(25, 21, 18, 0.28),
+      0 32px 56px -28px rgba(25, 21, 18, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-slow) var(--ease-in-out);
+  }
+
+  .reader.is-book.is-cover .reader__cover {
+    opacity: 1;
+  }
+
+  .reader.is-book .reader__cover :global(img) {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  /* In scroll mode the cover is just the first thing on the page. */
+  .reader:not(.is-book) .reader__cover {
+    max-inline-size: 22rem;
+    margin: 0 auto var(--space-xl);
+  }
+
+  .reader:not(.is-book) .reader__cover :global(img) {
+    inline-size: 100%;
+    block-size: auto;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* ---------- Fixed front-matter pages ----------
+     Each fills exactly one column. A fresh column is forced before it, and
+     whatever follows is forced onto the next one, so a title page is never
+     shared with the copyright notice. */
+  .reader.is-book :global(.reader__fixed) {
+    break-before: column;
+    break-inside: avoid;
+    box-sizing: border-box;
+    /* A percentage block-size does not resolve inside a multi-column box, so
+       the script publishes the measured page height as --page-h. */
+    block-size: var(--page-h, 100%);
+    overflow: hidden;
+  }
+
+  /* The chapter always begins on a fresh page, as in the book. This also
+     preserves the opener's top margin: a block that lands at the top of a
+     column by an unforced break has that margin truncated; a forced break
+     keeps it. */
+  .reader.is-book :global(.reader__fixed + *),
+  .reader.is-book :global(.reader__break),
+  .reader.is-book :global([data-chapter-start]) {
+    break-before: column;
+  }
+
+  .reader:not(.is-book) :global(.reader__fixed) {
+    min-block-size: 50vh;
+    display: flex;
+    margin-block-end: var(--space-2xl);
+  }
 
   /* ---------- Running head and corner marks ----------
      The running head sits in the 0.88" top margin, and the four brackets mark
-     the corners of the 4.5" x 7.72" text block, as on the printed page. */
+     the corners of the 4.5" x 7.72" text block, as on the printed page. Front
+     matter carries no folio, so the running head hides until the chapter. */
   .reader__marks {
     position: absolute;
     inset: 0;
     pointer-events: none;
+  }
+
+  .reader.is-cover .reader__marks {
+    display: none;
   }
 
   .reader__runhead {
@@ -286,6 +372,10 @@ const { label, title } = Astro.props;
     text-transform: uppercase;
     color: var(--ink-faint);
     white-space: nowrap;
+  }
+
+  .reader.is-front .reader__runhead {
+    visibility: hidden;
   }
 
   .reader__runhead-sep {
@@ -330,7 +420,8 @@ const { label, title } = Astro.props;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .reader.is-book .reader__flow {
+    .reader.is-book .reader__flow,
+    .reader.is-book .reader__cover {
       transition: none;
     }
     .reader.is-turning .reader__flow {
@@ -343,7 +434,7 @@ const { label, title } = Astro.props;
     align-items: baseline;
     justify-content: space-between;
     gap: var(--space-sm);
-    max-inline-size: 38rem;
+    max-inline-size: 42rem;
     margin: var(--space-sm) auto 0;
     font-size: var(--text-xs);
     color: var(--ink-faint);
@@ -363,7 +454,7 @@ const { label, title } = Astro.props;
   }
 
   @media (max-width: 40rem) {
-    /* The arrows would steal width the page needs; swipe and keys still work. */
+    /* The arrows would steal width the page needs; tap, swipe and keys still work. */
     .reader.is-ready.is-book .reader__nav {
       display: none;
     }
@@ -443,22 +534,31 @@ const { label, title } = Astro.props;
   }
 
   function initReader(root: HTMLElement) {
-    const viewport = root.querySelector<HTMLElement>('[data-viewport]');
-    const flow = root.querySelector<HTMLElement>('[data-flow]');
-    const page = root.querySelector<HTMLElement>('[data-book]');
+    const viewportEl = root.querySelector<HTMLElement>('[data-viewport]');
+    const flowEl = root.querySelector<HTMLElement>('[data-flow]');
+    const pageEl = root.querySelector<HTMLElement>('[data-book]');
     const prevBtn = root.querySelector<HTMLButtonElement>('[data-prev]');
     const nextBtn = root.querySelector<HTMLButtonElement>('[data-next]');
     const pagesOut = root.querySelector<HTMLElement>('[data-pages]');
     const folio = root.querySelector<HTMLElement>('[data-folio]');
     const soundBtn = root.querySelector<HTMLButtonElement>('[data-sound-toggle]');
     const modeBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-mode]')];
-    if (!viewport || !flow || !page) return;
+    if (!viewportEl || !flowEl || !pageEl) return;
+    // Re-bound after the guard so the closures below see them as non-null.
+    const viewport: HTMLElement = viewportEl;
+    const flow: HTMLElement = flowEl;
+    const page: HTMLElement = pageEl;
+
+    // The cover, if there is one, is page 0 and lives outside the flow.
+    const coverPages = root.hasAttribute('data-has-cover') ? 1 : 0;
 
     const sound = new PageSound();
     sound.enabled = readStore(SOUND_KEY) !== 'off';
     soundBtn?.setAttribute('aria-pressed', String(sound.enabled));
 
-    const state = { page: 0, pages: 1, width: 0 };
+    // `step` is one column plus the gap; `chapterStart` is the first page that
+    // carries a folio.
+    const state = { page: 0, pages: 1, step: 0, chapterStart: coverPages };
 
     function setMode(mode: 'book' | 'flow') {
       root.classList.toggle('is-book', mode === 'book');
@@ -470,10 +570,12 @@ const { label, title } = Astro.props;
         paginate();
       } else {
         flow.style.removeProperty('height');
+        flow.style.removeProperty('--page-h');
         flow.style.removeProperty('column-width');
         flow.style.removeProperty('column-gap');
         flow.style.transform = '';
         page.style.removeProperty('inline-size');
+        root.classList.remove('is-cover', 'is-front');
         if (pagesOut) pagesOut.textContent = '';
       }
     }
@@ -484,9 +586,8 @@ const { label, title } = Astro.props;
 
       // Fit a 6x9 page to the space. Height is the constraint on a landscape
       // screen: the page has to fit once scrolled to, or the reader would be
-      // scrolling AND turning — the one thing this exists to avoid. Budget the
-      // sticky site header, this toolbar and the page counter out of it, then
-      // derive the width from the 2:3 ratio.
+      // scrolling AND turning. Budget the sticky site header, this toolbar and
+      // the page counter out of it, then derive the width from the 2:3 ratio.
       const chrome =
         (document.querySelector<HTMLElement>('.site-header')?.getBoundingClientRect()
           .height ?? 0) +
@@ -509,31 +610,52 @@ const { label, title } = Astro.props;
       const padY = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
       const border =
         parseFloat(styles.borderTopWidth) + parseFloat(styles.borderBottomWidth);
-      const width = viewport!.clientWidth - padX;
+      const width = viewport.clientWidth - padX;
       const height = pageH - padY - border;
 
       flow.style.height = `${height}px`;
+      flow.style.setProperty('--page-h', `${height}px`);
       flow.style.columnWidth = `${width}px`;
       // The gap is the whole side padding, so column N+1 begins exactly at the
       // far edge of the padding box — outside the clip — rather than in the
-      // margin next to the text. A zero gap put the next page in the margin.
+      // margin next to the text.
       flow.style.columnGap = `${padX}px`;
 
-      state.width = width + padX;
+      state.step = width + padX;
       // n columns span n*W + (n-1)*gap.
-      state.pages = Math.max(1, Math.round((flow.scrollWidth + padX) / (width + padX)));
+      const columns = Math.max(1, Math.round((flow.scrollWidth + padX) / state.step));
+      state.pages = coverPages + columns;
+
+      // Where numbering starts: the column holding the chapter's first element.
+      // Measured with the flow untranslated, so rect offsets are column offsets.
+      flow.style.transform = 'translateX(0)';
+      const start = flow.querySelector<HTMLElement>('[data-chapter-start]');
+      const flowLeft = flow.getBoundingClientRect().left;
+      const startCol = start
+        ? Math.round((start.getBoundingClientRect().left - flowLeft) / state.step)
+        : 0;
+      state.chapterStart = coverPages + Math.max(0, startCol);
+
       state.page = Math.min(state.page, state.pages - 1);
       render();
     }
 
     function render() {
-      flow.style.transform = `translateX(${-state.page * state.width}px)`;
+      const flowPage = Math.max(0, state.page - coverPages);
+      flow.style.transform = `translateX(${-flowPage * state.step}px)`;
+
+      root.classList.toggle('is-cover', coverPages > 0 && state.page === 0);
+      root.classList.toggle('is-front', state.page < state.chapterStart);
+
       if (prevBtn) prevBtn.disabled = state.page === 0;
       if (nextBtn) nextBtn.disabled = state.page >= state.pages - 1;
       if (pagesOut) {
         pagesOut.textContent = state.pages > 1 ? `${state.page + 1} / ${state.pages}` : '';
       }
-      if (folio) folio.textContent = String(state.page + 1);
+      if (folio) {
+        const n = state.page - state.chapterStart + 1;
+        folio.textContent = n >= 1 ? String(n) : '';
+      }
     }
 
     function turn(delta: number) {
