@@ -252,6 +252,12 @@ so it is fenced off four ways, each covering a gap in the others:
   Googlebot is deliberately *not* disallowed there: a crawler that cannot fetch
   the page never sees the noindex on it.
 
+The live `/robots.txt` is longer than the one in `public/`: Cloudflare's
+managed robots.txt (Security → Bots → Manage AI bots) is switched on for the
+zone and prepends its own block, which disallows the major AI crawlers from
+the *whole* site and adds a `Content-Signal: ai-train=no` line. The file in
+this repo follows it verbatim. Both are in force; neither restricts Googlebot.
+
 None of this stops a person copying text, and nothing on the web can. What
 does help is Cloudflare's **Block AI scrapers and crawlers** toggle (Security →
 Bots), which refuses those user agents at the edge regardless of what
