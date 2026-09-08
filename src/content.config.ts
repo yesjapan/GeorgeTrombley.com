@@ -141,14 +141,16 @@ const fiction = defineCollection({
 
       // ---- front matter only ----
       cover: image().optional(),
+      /**
+       * The title-page lockup: an SVG in src/assets/, inlined so it takes the
+       * page's ink colour in both colour schemes. Without one, the title page
+       * is set as text from `title`, `subtitle` and `author`.
+       */
+      lockup: z.string().regex(/\.svg$/, 'lockup must be an .svg in src/assets/').optional(),
       subtitle: z.string().optional(),
       author: z.string().optional(),
-      publisher: z.string().optional(),
-      /** Lines of the copyright page, in order. */
-      copyright: z.array(z.string()).default([]),
-      isbn: z.string().optional(),
-      credits: z.array(z.object({ role: z.string(), name: z.string() })).default([]),
-      dedication: z.string().optional(),
+      /** One line at the foot of the title page, e.g. "© 2026 … All rights reserved." */
+      copyright: z.string().optional(),
     }),
 });
 

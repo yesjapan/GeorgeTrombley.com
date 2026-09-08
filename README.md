@@ -182,9 +182,25 @@ rule). The drop cap is automatic.
 #### Front matter
 
 A book does not open on chapter one, so neither does the sample. An entry with
-`kind: front` (see `fate-squared-front.md`) supplies the cover, title page,
-copyright page, dedication and any prefatory text — the author's note and
-foreword live in its body, and each `##` heading there starts a fresh page.
+`kind: front` (see `fate-squared-front.md`) supplies what comes before the
+first chapter, laid out as the book lays it out:
+
+- **Cover** — `cover`, an image next to the books' covers. Page 0, edge to edge.
+- **Title page** — `lockup`, the name of an SVG in `src/assets/`, drawn in the
+  page's ink colour so it reads in both schemes, with `copyright` as one line
+  at the foot. The SVG must be pure paths: if it has live `<text>` (Illustrator
+  exports the author tag that way, in Agency FB, which no phone has), outline
+  it first — Type → Create Outlines — or the tag falls back to a generic sans.
+  Without a `lockup`, the title page is set as text from `title`, `subtitle`
+  and `author`.
+- **Everything else** is the Markdown body, in order. Up to the first `##` is
+  page 2 (rights notice, the author's note, ISBN and credits, dedication);
+  each `##` after that starts a fresh page with the heading set top-right in
+  FateSquared, as the book sets its Foreword. Conventions in the body: `###`
+  is a run-in bold heading on the same page; a `` at the end of a line is a
+  line break inside one paragraph (the ISBN/credits block); a paragraph with
+  `class="front__dedication"` is centred.
+
 The reader shows all of it before the first chapter only; later chapters open
 on their own page. Front pages carry no page number; folio 1 is the chapter
 opener, as in the book. A front entry has no URL of its own.
@@ -195,7 +211,6 @@ the title used in navigation ("1 - George" vs "Chapter One").
 Keep notes about what was left out of the manuscript in YAML comments in the
 frontmatter, never in an HTML comment in the body: Markdown copies HTML
 comments into the page source verbatim.
-
 ### The book reader
 
 Excerpts render one page at a time in a reader sized to the book's actual

@@ -5,6 +5,7 @@ import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BookReader from '../../components/BookReader.astro';
 import { links } from '../../data/site';
+import { assetSvg } from '../../lib/inline-svg';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   // Drafts produce no route at all, so an unfinished chapter has no URL to be
@@ -46,6 +47,15 @@ const front =
     : undefined;
 const FrontContent = front ? (await render(front)).Content : null;
 const f = front?.data;
+
+// The title-page lockup is inlined rather than loaded as an <img>, so its
+// paths take the page's ink colour and follow the colour scheme.
+const lockup = f?.lockup
+  ? assetSvg(
+      f.lockup,
+      [f.title, [f.subtitle?.toLowerCase(), 'by', f.author].filter(Boolean).join(' ')].join(' — '),
+    )
+  : undefined;
 ---
 
 <!--
@@ -134,44 +144,24 @@ const f = front?.data;
       {
         f && (
           <div slot="front" class="front">
-            <!-- Title page: the book's lockup, set in its own face rather than
-                 as the PNG so it stays crisp and reads in dark mode. -->
+            <!-- Title page, as the book has it: the lockup in the upper half,
+                 the copyright line on the last line of the text block. -->
             <section class="reader__fixed front__title" aria-label="Title page">
-              <p class="front__title-main">{f.title}</p>
-              <p class="front__title-by">
-                {f.subtitle && <span class="front__title-sub">{f.subtitle} by</span>}
-                <span class="front__title-author">{f.author}</span>
-              </p>
-              {f.publisher && <p class="front__title-pub">{f.publisher}</p>}
-            </section>
-
-            <section class="reader__fixed front__copyright" aria-label="Copyright">
-              <div class="front__copyright-body">
-                {f.copyright.map((line, i) => (
-                  <p class={i === 0 ? 'front__copyright-line front__copyright-line--first' : 'front__copyright-line'}>
-                    {line}
-                  </p>
-                ))}
-                {f.isbn && <p class="front__copyright-line">ISBN: {f.isbn}</p>}
-                {f.credits.length > 0 && (
-                  <div class="front__credits">
-                    {f.credits.map((c) => (
-                      <p class="front__copyright-line">
-                        {c.role}: {c.name}
-                      </p>
-                    ))}
+              {
+                lockup ? (
+                  <div class="front__lockup" set:html={lockup} />
+                ) : (
+                  <div class="front__lockup front__lockup--text">
+                    <p class="front__title-main">{f.title}</p>
+                    <p class="front__title-by">
+                      {f.subtitle && <span>{f.subtitle} by</span>}
+                      <span class="front__title-author">{f.author}</span>
+                    </p>
                   </div>
-                )}
-              </div>
+                )
+              }
+              {f.copyright && <p class="front__copyright">{f.copyright}</p>}
             </section>
-
-            {
-              f.dedication && (
-                <section class="reader__fixed front__dedication" aria-label="Dedication">
-                  <p>{f.dedication}</p>
-                </section>
-              )
-            }
 
             {
               FrontContent && (
@@ -313,32 +303,97 @@ const f = front?.data;
     font-style: italic;
   }
 
-  /* ---------- Front matter ---------- */
-  .front__prose :global(h2) {
-    /* Each heading in the prefatory text starts a fresh page. */
-    break-before: column;
+  /* ---------- Front matter ----------
+     Laid out from the manuscript's own pages. The prefatory pages set their
+     paragraphs as blocks with a line of space between, not with the chapter's
+     first-line indent. */
+  .chapter__body.front__prose {
+    font-size: clamp(13px, 2.67cqw, 17.5px);
   }
 
-  /* Title page: the lockup, set as in the book — the title big and bold in
-     FateSquared, the byline beneath in the regular weight — centred, with the
-     publisher's name at the foot. */
+  .front__prose :global(p + p) {
+    text-indent: 0;
+    margin-block-start: 0.7em;
+  }
+
+  /* A run-in heading on the same page ("About me – The author"): bold, in the
+     text face, with its paragraph directly beneath. */
+  .front__prose :global(h3) {
+    font: inherit;
+    font-weight: 700;
+    margin-block: 1em 0;
+    text-align: left;
+  }
+
+  .front__prose :global(h3 + p) {
+    margin-block-start: 0;
+  }
+
+  /* A page heading (the Foreword): a fresh page, the word set top-right in
+     FateSquared where a running head would go, the text starting some way
+     below it. */
+  .chapter__body.front__prose :global(h2) {
+    break-before: column;
+    font-family: 'FateSquared', var(--font-display);
+    font-weight: 400;
+    font-size: 1.55em;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: right;
+    margin: 0 0 7cqw;
+  }
+
+  .front__prose :global(.front__dedication) {
+    margin-block-start: 2em;
+    padding-inline: 6%;
+    text-align: center;
+    text-indent: 0;
+    text-wrap: balance;
+  }
+
+  /* ---------- Title page ----------
+     The lockup starts about a fifth of the way down the page and spans most
+     of the measure; the copyright line sits on the last line of the text
+     block, at the book's true type size. */
   .front__title {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     text-align: center;
-    font-family: 'FateSquared', var(--font-display);
     color: var(--ink);
+  }
+
+  .front__lockup {
+    inline-size: 88%;
+    margin-block-start: 15cqw;
+  }
+
+  .front__lockup :global(svg) {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+  }
+
+  .front__copyright {
+    margin-block-start: auto;
+    font-family: 'Times New Roman', Times, Tinos, 'Liberation Serif', serif;
+    font-size: clamp(12px, 2.45cqw, 16px);
+    line-height: 1.4;
+    text-indent: 0;
+  }
+
+  /* Text fallback for a book without a lockup file. */
+  .front__lockup--text {
+    font-family: 'FateSquared', var(--font-display);
   }
 
   .front__title-main {
     font-weight: 700;
     font-size: 17cqw;
     line-height: 0.95;
-    letter-spacing: 0.01em;
     text-transform: uppercase;
-    margin-block-start: -12cqw;
   }
 
   .front__title-by {
@@ -358,78 +413,19 @@ const f = front?.data;
     letter-spacing: 0.08em;
   }
 
-  .front__title-pub {
-    position: absolute;
-    inset-block-end: 0;
-    font-size: 2.3cqw;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-  }
-
-  .front__title {
-    position: relative;
-  }
-
   /* Scrolling text has no page to be proportional to; hold the lockup to a
      sensible size there. */
+  :global(.reader:not(.is-book)) .front__lockup {
+    max-inline-size: 20rem;
+    margin-block: var(--space-lg);
+  }
+
   :global(.reader:not(.is-book)) .front__title-main {
     font-size: clamp(2.75rem, 10cqw, 4.5rem);
   }
 
-  /* Copyright page: small type at the foot, as in most books. */
-  .front__copyright {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    font-family: 'Times New Roman', Times, Tinos, 'Liberation Serif', serif;
-    font-size: 0.78em;
-    line-height: 1.45;
-    color: var(--ink-muted);
-    text-align: left;
-    hyphens: none;
-  }
-
-  .front__copyright-line {
-    text-indent: 0 !important;
-  }
-
-  .front__copyright-line + .front__copyright-line {
-    margin-block-start: 0.9em;
-  }
-
-  .front__copyright-line--first {
-    text-align: center;
-    color: var(--ink);
-    margin-block-end: 1.4em;
-  }
-
-  .front__credits {
-    margin-block-start: 1.4em;
-  }
-
-  .front__credits .front__copyright-line + .front__copyright-line {
-    margin-block-start: 0.2em;
-  }
-
-  /* Dedication: centred on an otherwise empty page. */
-  .front__dedication {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-family: 'Times New Roman', Times, Tinos, 'Liberation Serif', serif;
-    font-style: italic;
-    font-size: 1.05em;
-    line-height: 1.6;
-    color: var(--ink);
-    padding-inline: 8%;
-    text-wrap: balance;
-  }
-
-  .front__dedication :global(p) {
-    text-indent: 0;
-    margin-block-start: -8cqw;
+  :global(.reader:not(.is-book)) .front__copyright {
+    margin-block-start: var(--space-md);
   }
 
   /* ---------- Text-message exchanges ----------
