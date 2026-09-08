@@ -24,13 +24,18 @@
  * removed.
  */
 
+/**
+ * The speech bubble after a sender's name is glyph U+F13E in George's own
+ * From-Zero-EMOJI-HEADS font — the same glyph the printed book uses. The font
+ * covers only the Private Use Area (U+F100–U+F13F), so it is applied to this
+ * one span and nothing else; the faces inside messages are ordinary Unicode
+ * emoji and render with the system's emoji font, as they do in the book.
+ *
+ * Written as a JS escape rather than the literal character so the source stays
+ * plain ASCII and cannot be mangled by an editor that does not know the font.
+ */
 const SPEECH_BUBBLE =
-  '<svg class="chat__icon" viewBox="0 0 20 16" aria-hidden="true" focusable="false">' +
-  '<path d="M2.6 0h14.8A2.6 2.6 0 0 1 20 2.6v8.1a2.6 2.6 0 0 1-2.6 2.6H7.9L3.2 16a.6.6 0 0 1-.95-.5v-2.2H2.6A2.6 2.6 0 0 1 0 10.7V2.6A2.6 2.6 0 0 1 2.6 0Z" fill="currentColor"/>' +
-  '<circle cx="5.8" cy="6.6" r="1.35" fill="var(--chat-dot)"/>' +
-  '<circle cx="10" cy="6.6" r="1.35" fill="var(--chat-dot)"/>' +
-  '<circle cx="14.2" cy="6.6" r="1.35" fill="var(--chat-dot)"/>' +
-  '</svg>';
+  '<span class="chat__icon" aria-hidden="true">' + 'F13E' + '</span>';
 
 function escapeHtml(value) {
   return value

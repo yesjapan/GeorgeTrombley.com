@@ -177,30 +177,43 @@ rule). The drop cap is automatic.
 
 ### The book reader
 
-Excerpts render in a paginated reader that reads like an open book — two pages
-with a spine, page-turn sound, arrow keys and swipe.
+Excerpts render one page at a time in a reader sized to the book's actual
+trim, **6 x 9**, with the manuscript's own margins (0.88 / 0.4 / 1.0 / 0.5 in),
+running head, corner brackets and page-turn sound. Every measurement on the page
+is a fraction of its width via container-query units, so it keeps its
+proportions at any size and everything on it scales together.
 
-It works by flowing the prose into **CSS multi-columns** inside a fixed-height
-box; each column is a page and turning is a horizontal translate. Nothing is
-pre-split into fixed pages, which is what makes it survive a resize, a rotation
-or a reader zooming the text. Consequences:
+Typography is taken from the .docx styles, not chosen: body in Times New Roman,
+justified with hyphenation, 15pt exact leading and a 0.25 in first-line indent
+(`1Text`); text messages in Arial italic, Kim's ranged left and indented 0.5 in,
+George's ranged right and indented 0.24 in (`Chat0` / `Chat`); the running
+head in FateSquaredR. The bubble after each sender's name is glyph U+F13E from
+`From-Zero-EMOJI-HEADS`, the font the printed book uses. Both fonts are
+self-hosted in `public/fonts/`.
 
-- The whole chapter is in the HTML, so it is selectable, searchable, indexable,
-  and available to a screen reader as continuous prose whichever page is showing.
-- **With JavaScript off the reader never initialises and the same markup is an
+How it paginates: the prose is flowed into **CSS multi-columns** inside a
+fixed-height box, one column per page, and turning is a horizontal translate.
+Nothing is pre-split into fixed pages, which is what makes it survive a resize,
+a rotation or a reader zooming. Consequences:
+
+- The whole chapter is in the HTML — selectable, searchable, indexable, and read
+  by a screen reader as continuous prose whichever page is showing.
+- **With JavaScript off the reader never initialises and the markup is an
   ordinary scrolling article.** That is the default state, not a fallback.
-- A **Continuous** toggle returns to scrolling text at any time. The choice, and
-  the sound setting, are remembered in `localStorage`.
-- The page height is computed from the window minus the sticky header, toolbar
-  and page counter, so a spread fits on screen — otherwise you would have to
-  scroll *and* turn pages, which defeats the point. Below 640px of usable width
-  it drops to a single page.
+- A **Scroll** toggle returns to continuous text; that and the sound setting
+  persist in `localStorage`.
+- A sender is never split from their messages across a page (`break-inside:
+  avoid`), and prose has orphans/widows of 2.
+- Columns are separated by a gap equal to the side padding, so the neighbouring
+  page sits outside the clip. A zero gap put the next page in the margin.
 - Turn animation respects `prefers-reduced-motion`.
 
-**The page-turn sound is synthesised with Web Audio**, not a sample: a short
-noise burst through a band-pass sweeping downward, with a fast attack. That is
-roughly what paper is. It ships no audio file and raises no licensing question.
-To use a real recording instead, replace `PageSound.play()` in
+It was briefly a two-page spread. That was one wide page pretending to be two,
+and the messages re-wrapped inside its narrow columns looked amateur. E-readers
+show a single page for a reason.
+
+**The page-turn sound is synthesised with Web Audio** — a noise burst through a
+band-pass sweeping down. To use a real recording, replace `PageSound.play()` in
 `src/components/BookReader.astro` with an `Audio` element.
 
 ### A news item
