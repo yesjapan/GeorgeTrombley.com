@@ -2,7 +2,7 @@
 title: 'How I calmed my brain'
 date: 2025-05-14
 description: 'Letting go of my addictions is... addicting.'
-canonicalUrl: 'https://polyglotgeorge.substack.com/p/how-i-calmed-my-brain'
+sourceUrl: 'https://polyglotgeorge.substack.com/p/how-i-calmed-my-brain'
 originallyPublishedAt: 'Substack'
 ---
 Yesterday I happened across a YouTube video that did a deep dive into how insanely difficult life was during the medieval age. It made me appreciate just how amazing a time we live in. A bit later I came across a YouTube short talking about how children nowadays are so addicted to their phones that teaching them has become an insurmountable task. It really hit me hard when the teacher said the students don’t react to being punished as they are just too apathetic to care. The combination of these two videos made me think about my current choices in how I spend my time throughout my day.

@@ -62,12 +62,20 @@ const posts = defineCollection({
       hero: image().optional(),
       draft: z.boolean().default(false),
       /**
-       * Set on imported posts so the canonical URL still points at the place the
-       * post was first indexed. New posts written here leave it unset and
-       * canonical to this site.
+       * SEO override: tells search engines some OTHER copy of this post is the
+       * one to rank. Normally left unset — this site is the canonical home for
+       * everything it publishes, including posts mirrored from Substack, since
+       * Substack's reach comes from its own discovery rather than from search.
+       *
+       * Deliberately separate from `sourceUrl` below: crediting where something
+       * first appeared and conceding search ranking to it are different
+       * decisions, and wiring them to one field meant you could not do one
+       * without the other.
        */
       canonicalUrl: z.string().url().optional(),
-      /** Human-readable origin, e.g. "Substack". Shown as a small credit line. */
+      /** Where the post first appeared. Renders as a credit line and link. */
+      sourceUrl: z.string().url().optional(),
+      /** Human-readable origin, e.g. "Substack". Shown with `sourceUrl`. */
       originallyPublishedAt: z.string().optional(),
     }),
 });

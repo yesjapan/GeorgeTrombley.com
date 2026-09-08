@@ -2,7 +2,7 @@
 title: 'Are we victims of our own bubbles?'
 date: 2025-04-20
 description: 'I''m not an independent thinker although I like to believe I am...'
-canonicalUrl: 'https://polyglotgeorge.substack.com/p/are-we-victims-of-our-own-bubbles'
+sourceUrl: 'https://polyglotgeorge.substack.com/p/are-we-victims-of-our-own-bubbles'
 originallyPublishedAt: 'Substack'
 ---
 I've gotten used to the fact that America is no longer the top of the world. Honestly, she probably wasn't on the top way before I realized it, but I suppose I just believed all the propaganda in my self-imposed media bubble.

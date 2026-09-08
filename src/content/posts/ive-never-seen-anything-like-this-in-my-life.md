@@ -2,7 +2,7 @@
 title: 'I''ve never seen anything like this in my life!'
 date: 2025-04-24
 description: 'Does this phrase really mean anything?'
-canonicalUrl: 'https://polyglotgeorge.substack.com/p/ive-never-seen-anything-like-this'
+sourceUrl: 'https://polyglotgeorge.substack.com/p/ive-never-seen-anything-like-this'
 originallyPublishedAt: 'Substack'
 ---
 Have you ever taken a moment to consider the phrase, “I’ve never seen anything like this in my life?” Something about the phrase doesn’t sit well with me. I’m not saying those that have said it are wrong or lying. I just think the phrase itself doesn’t really have the impact the person saying it probably thinks it has.

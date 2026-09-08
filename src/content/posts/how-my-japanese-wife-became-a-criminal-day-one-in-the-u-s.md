@@ -2,7 +2,7 @@
 title: 'How my Japanese wife became a criminal day one in the U.S.'
 date: 2025-04-21
 description: 'I should start out by saying my wife is a Japanese national.'
-canonicalUrl: 'https://polyglotgeorge.substack.com/p/how-my-japanese-wife-became-a-criminal'
+sourceUrl: 'https://polyglotgeorge.substack.com/p/how-my-japanese-wife-became-a-criminal'
 originallyPublishedAt: 'Substack'
 ---
 I should start out by saying my wife is a Japanese national. She’s had a green card for 30 years and has lived with me here in Las Vegas since our marriage in 1995. When I started hearing word of random people being deported, I was initially calm, thinking our long history and lack of criminal records would keep her safe from the immigration dragnet that defines this current administration. But since then, I’ve seen stories that have me thinking otherwise. One is particular story is a recent one of a Japanese man living in Utah. With only a year left from obtaining his PhD from Brigham Young University, suddenly his student visa was cancelled and he’s now facing deportation.

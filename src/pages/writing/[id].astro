@@ -92,10 +92,10 @@ const jsonLd = {
     </div>
 
     {
-      d.canonicalUrl && (
+      d.sourceUrl && (
         <p class="post__origin">
-          Originally published on{' '}
-          <a href={d.canonicalUrl} rel="canonical noopener">
+          Also published on{' '}
+          <a href={d.sourceUrl} rel="noopener">
             {d.originallyPublishedAt ?? 'another site'}
           </a>
           .

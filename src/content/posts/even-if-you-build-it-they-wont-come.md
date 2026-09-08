@@ -2,7 +2,7 @@
 title: 'Even if you build it, they won''t come'
 date: 2025-04-22
 description: 'The next step required for people to "come" after you "build"'
-canonicalUrl: 'https://polyglotgeorge.substack.com/p/even-if-you-build-it-they-wont-come'
+sourceUrl: 'https://polyglotgeorge.substack.com/p/even-if-you-build-it-they-wont-come'
 originallyPublishedAt: 'Substack'
 ---
 As you sip your 3rd cup of coffee, you quietly say to yourself, “if I build it, they will come.” You’ve been saying this phrase for months or maybe years as you build. It’s great for motivation, isn’t it? Unfortunately, it’s not true. It doesn’t matter if you build it. Even if what you’ve built is amazing, no one will just “come.” In fact, the majority of people you know won’t engage. Not your family. Not your best friends. Not even the people who said they couldn’t wait to read the novel you wrote to escape the pain of your breakup. They might not even watch the first music video you made from the album you spent your gap year writing.

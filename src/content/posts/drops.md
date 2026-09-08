@@ -2,7 +2,7 @@
 title: 'Drops.'
 date: 2025-05-04
 description: 'Based on a true story.'
-canonicalUrl: 'https://polyglotgeorge.substack.com/p/drops'
+sourceUrl: 'https://polyglotgeorge.substack.com/p/drops'
 originallyPublishedAt: 'Substack'
 ---
 The room smelled wet, like the moss smelled in the Oregon forest my daughter took us in to hike. But this isn’t a forest, it’s my office. It’s the place I spend the majority of my days creating or at least dreaming of creating while I mindlessly rip my recent haul of used DVDs into my personal media server. I don’t know if I’m collecting the movies so I can watch them later, or just for the satisfaction of seeing the number of movies on my server go up. It was a pleasant smell, one that I wish I could conjure up on demand. The air was cool as the air on a spring morning, not like the usual stifling heat resulting from 20+ hard drives spinning in large drive bays and four monitors displaying the nostalgic pipe screensaver I had set on them. I wasn’t sure if they really needed a screensaver, but at 1000 bucks a pop I wasn’t going to take any chances the high-tech OLEDs wouldn’t burn in.

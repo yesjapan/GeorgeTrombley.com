@@ -23,7 +23,7 @@ npm run dev          # http://localhost:4321
 | `npm run check` | TypeScript + Astro diagnostics |
 | `npm run videos` | Refresh the video list from YouTube (see below) |
 | `npm run resolve-channel -- @handle` | Turn a YouTube @handle into the `UC…` id |
-| `npm run import-substack` | One-time import of the Substack archive |
+| `npm run import-substack` | Pull new Substack posts (also runs on a schedule) |
 | `npm run og` | Regenerate `public/og.jpg`, the social-share card |
 | `node scripts/import-covers.mjs <dir>` | Normalise publisher cover art (see below) |
 | `node scripts/check-links.mjs <file>` | Check retailer links still resolve |
@@ -115,9 +115,31 @@ draft: false                 # true hides it from the site and the feed entirely
 The post.
 ```
 
-Leave `canonicalUrl` unset for anything written here. It exists only for the six
-posts imported from Substack, which point back at the URLs Google already
-indexed. New writing should belong to this site.
+Leave `canonicalUrl` unset. It is an SEO escape hatch for conceding search
+rankings to some other copy of a post, and this site does not concede any —
+including for posts mirrored from Substack.
+
+### Substack mirroring
+
+`.github/workflows/substack.yml` checks the Substack feed every six hours and
+commits any new post into `src/content/posts/`. **Publish on Substack and it
+appears here on its own**, usually within a few hours.
+
+- **Only new posts are written.** An existing file is skipped, so edits made here
+  are never clobbered. The trade-off is that edits made *on Substack* after a
+  post is imported do not flow through — re-import that one by hand with
+  `npm run import-substack -- --force` if you need them.
+- **Imported posts get `sourceUrl`, not `canonicalUrl`.** `sourceUrl` renders the
+  "Also published on Substack" credit and links back. `canonicalUrl` would tell
+  Google that the Substack copy is the one to rank, which is not wanted:
+  Substack's reach comes from its own discovery and recommendations, not from
+  search, so there is nothing to gain by handing it the ranking. Two separate
+  fields precisely so crediting and conceding can be decided independently.
+- The conversion is automated and lands without review, so **skim new posts after
+  they arrive**. HTML-to-Markdown is never perfect.
+
+To write directly here instead, just add the `.md` file — no Substack involved,
+and nothing to configure.
 
 ### A news item
 

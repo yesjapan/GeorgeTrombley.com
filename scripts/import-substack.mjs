@@ -1,19 +1,27 @@
 #!/usr/bin/env node
 /**
- * One-time import of the Substack archive into src/content/posts/.
+ * Mirror the Substack feed into src/content/posts/.
  *
  *   npm run import-substack
  *   npm run import-substack -- --force     # overwrite files that already exist
  *   npm run import-substack -- --feed=https://other.substack.com/feed
  *
- * The site is the source of truth for writing from here on. Imported posts keep
- * `canonicalUrl` pointing at the Substack permalink, because those URLs are
- * already indexed — this site should not compete with them for the same text.
- * Posts written here afterwards leave `canonicalUrl` unset and canonical to
- * georgetrombley.com.
+ * Runs on a schedule from .github/workflows/substack.yml, and by hand any time.
  *
- * HTML-to-Markdown conversion is never perfect. Read every generated file
- * before committing.
+ * Only NEW posts are written — an existing file is skipped, so hand edits made
+ * here are never clobbered by a later run. The flip side is that edits made on
+ * Substack after a post has been imported do not flow through; re-import that
+ * one with --force if you need them.
+ *
+ * Imported posts get `sourceUrl` (a credit line linking back to Substack) but
+ * NOT `canonicalUrl`. That is deliberate: Substack's reach comes from its own
+ * discovery and recommendations, not from search rankings, so there is nothing
+ * to gain by telling Google that the Substack copy is the one to index. This
+ * site is the canonical home for its own writing.
+ *
+ * HTML-to-Markdown conversion is never perfect. Skim what lands before it goes
+ * out — the scheduled workflow commits automatically, so the review is after
+ * the fact rather than before.
  */
 
 import { writeFile, mkdir, access } from 'node:fs/promises';
@@ -147,7 +155,7 @@ async function main() {
       `title: ${yamlString(title)}`,
       `date: ${date.toISOString().slice(0, 10)}`,
       `description: ${yamlString(description)}`,
-      `canonicalUrl: ${yamlString(link)}`,
+      `sourceUrl: ${yamlString(link)}`,
       "originallyPublishedAt: 'Substack'",
       '---',
       '',
