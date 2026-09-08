@@ -79,6 +79,19 @@ const jsonLd = {
       unicode-range: U+F100-F13F;
     }
   </style>
+  <!--
+    Monochrome emoji for the faces inside messages, matching the printed book.
+    Relying on the text-presentation selector alone is not enough: Windows
+    honours it (Segoe UI Symbol), but Mac and iOS draw Apple Color Emoji
+    regardless, so readers there would see a yellow face. Google serves Noto
+    Emoji split by character range, so a chapter with one crying face fetches
+    only the slice that contains it.
+  -->
+  <link
+    slot="head"
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Noto+Emoji&display=block"
+  />
 
   <article class="chapter">
     <header class="chapter__head">
@@ -269,7 +282,8 @@ const jsonLd = {
   .chapter__body :global(.chat__emoji) {
     font-style: normal;
     font-variant-emoji: text;
-    font-family: 'Segoe UI Symbol', 'Noto Emoji', 'Apple Symbols', sans-serif;
+    /* Noto Emoji first, so every platform draws the same monochrome face. */
+    font-family: 'Noto Emoji', 'Segoe UI Symbol', sans-serif;
   }
 
   /* The bubble is a glyph from George's emoji font, not an image. */
