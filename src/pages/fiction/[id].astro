@@ -1,20 +1,18 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { render, type CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BookReader from '../../components/BookReader.astro';
 import { links } from '../../data/site';
+import { getChapters, getFrontMatter } from '../../data/fiction';
 import { assetSvg } from '../../lib/inline-svg';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   // Drafts produce no route at all, so an unfinished chapter has no URL to be
   // stumbled on. Front-matter entries have no route either — they are shown
   // inside the first chapter's reader.
-  const excerpts = (await getCollection('fiction')).filter(
-    (e) => !e.data.draft && e.data.kind === 'chapter',
-  );
-  return excerpts.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+  return (await getChapters()).map((entry) => ({ params: { id: entry.id }, props: { entry } }));
 };
 
 interface Props {
@@ -29,9 +27,7 @@ const { Content } = await render(entry);
 const words = (entry.body ?? '').split(/\s+/).filter(Boolean).length;
 const minutes = Math.max(1, Math.round(words / 240));
 
-const chapters = (await getCollection('fiction'))
-  .filter((e) => !e.data.draft && e.data.kind === 'chapter' && e.data.book === d.book)
-  .sort((a, b) => a.data.order - b.data.order);
+const chapters = await getChapters(d.book);
 const position = chapters.findIndex((e) => e.id === entry.id);
 const next =
   position > -1 && position < chapters.length - 1 ? chapters[position + 1] : undefined;
@@ -39,12 +35,7 @@ const next =
 // The book's front matter — cover, title page, copyright, dedication, and any
 // prefatory text — goes before the FIRST chapter only, so opening the sample
 // feels like opening the book. Later chapters start on their own page.
-const front =
-  position === 0
-    ? (await getCollection('fiction')).find(
-        (e) => e.data.kind === 'front' && e.data.book === d.book && !e.data.draft,
-      )
-    : undefined;
+const front = position === 0 ? await getFrontMatter(d.book) : undefined;
 const FrontContent = front ? (await render(front)).Content : null;
 const f = front?.data;
 

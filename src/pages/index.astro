@@ -9,6 +9,7 @@ import { site, links, sameAs } from '../data/site';
 import { series } from '../data/series';
 import authorPhoto from '../assets/author.jpg';
 import { videos as allVideos } from '../data/videos';
+import { getChapters } from '../data/fiction';
 
 const books = (await getCollection('books')).filter((b) => !b.data.draft);
 
@@ -64,9 +65,7 @@ const videos = allVideos.slice(0, 4);
 
 // Sample chapter, if one is published. Until then the fiction panel offers the
 // novel's page rather than a "read the first chapter" link with nothing behind it.
-const firstChapter = (await getCollection('fiction'))
-  .filter((e) => !e.data.draft)
-  .sort((a, b) => a.data.order - b.data.order)[0];
+const firstChapter = (await getChapters())[0];
 
 const facts = [
   { value: String(books.length), label: 'language books' },

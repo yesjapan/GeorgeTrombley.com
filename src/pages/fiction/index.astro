@@ -1,17 +1,14 @@
 ---
 import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { site, links, publisher } from '../../data/site';
+import { getChapters } from '../../data/fiction';
 import cover from '../../assets/fate-squared-cover.jpg';
 
 // Published sample chapters, if any. While the chapter file is still a draft
 // this is empty and the page simply doesn't offer a read — rather than linking
 // to a sample that does not exist.
-const excerpts = (await getCollection('fiction'))
-  .filter((e) => !e.data.draft && e.data.book === 'Fate Squared')
-  .sort((a, b) => a.data.order - b.data.order);
-const firstChapter = excerpts[0];
+const firstChapter = (await getChapters('Fate Squared'))[0];
 
 const releaseDate = new Date('2026-10-29T00:00:00Z');
 const isbn = '9781959949046';
