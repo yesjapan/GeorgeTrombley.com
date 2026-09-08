@@ -190,7 +190,8 @@ first chapter, laid out as the book lays it out:
   page's ink colour so it reads in both schemes, with `copyright` as one line
   at the foot. The SVG must be pure paths: if it has live `<text>` (Illustrator
   exports the author tag that way, in Agency FB, which no phone has), outline
-  it first — Type → Create Outlines — or the tag falls back to a generic sans.
+  it first (Affinity: Layer → Convert to Curves; Illustrator: Type → Create
+  Outlines) or the tag falls back to a generic sans.
   Without a `lockup`, the title page is set as text from `title`, `subtitle`
   and `author`.
 - **Everything else** is the Markdown body, in order. Up to the first `##` is
