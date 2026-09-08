@@ -40,6 +40,26 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
+/**
+ * Inline emphasis inside a message line.
+ *
+ * Messages are already set in italic, so italic cannot also carry emphasis the
+ * way it does in the surrounding prose. The book underlines instead — "I
+ * strongly recommend you DO NOT take this job" — and Markdown has no underline
+ * syntax at all, so one is defined here:
+ *
+ *     __text__   underline
+ *     **text**   bold
+ *
+ * Applied after escaping, so the tags introduced here survive and anything the
+ * author typed stays inert.
+ */
+function inlineMarkup(escaped) {
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<u>$1</u>');
+}
+
 /** Typographic quotes and dashes, so message text matches the surrounding prose. */
 function smarten(value) {
   return value
@@ -101,7 +121,9 @@ function render(turns, me) {
       `<p class="chat__who">${escapeHtml(turn.who)}${SPEECH_BUBBLE}</p>`,
     );
     for (const line of turn.lines) {
-      parts.push(`<p class="chat__msg">${escapeHtml(smarten(line))}</p>`);
+      parts.push(
+        `<p class="chat__msg">${inlineMarkup(escapeHtml(smarten(line)))}</p>`,
+      );
     }
     parts.push('</div>');
   }

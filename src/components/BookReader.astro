@@ -90,6 +90,7 @@ const { label, author, title } = Astro.props;
             <span class="reader__runhead-sep">-</span>
             <span>{author}</span>
           </p>
+          <span class="reader__corners"></span>
         </div>
         <div class="reader__page reader__page--recto">
           <p class="reader__runhead">
@@ -97,6 +98,7 @@ const { label, author, title } = Astro.props;
             <span class="reader__runhead-sep">-</span>
             <span data-folio-right></span>
           </p>
+          <span class="reader__corners"></span>
         </div>
       </div>
 
@@ -292,27 +294,50 @@ const { label, author, title } = Astro.props;
     opacity: 0.55;
   }
 
-  /* Corner brackets at the top of each text block, as in the printed page. */
+  /* Corner brackets, all four corners of each text block as in the printed
+     page. Top pair hangs off .reader__page, bottom pair off the empty
+     .reader__corners span — two elements, four pseudo-elements. */
   .reader__page::before,
-  .reader__page::after {
+  .reader__page::after,
+  .reader__corners::before,
+  .reader__corners::after {
     content: '';
     position: absolute;
-    inset-block-start: 1.6em;
-    inline-size: 1.5rem;
-    block-size: 1.5rem;
+    inline-size: 1.4rem;
+    block-size: 1.4rem;
     border-color: var(--rule-strong);
     border-style: solid;
-    opacity: 0.55;
+    opacity: 0.5;
   }
 
   .reader__page::before {
+    inset-block-start: 1.9em;
     inset-inline-start: 0;
     border-width: 1px 0 0 1px;
   }
 
   .reader__page::after {
+    inset-block-start: 1.9em;
     inset-inline-end: 0;
     border-width: 1px 1px 0 0;
+  }
+
+  .reader__corners {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .reader__corners::before {
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    border-width: 0 0 1px 1px;
+  }
+
+  .reader__corners::after {
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    border-width: 0 1px 1px 0;
   }
 
   .reader {

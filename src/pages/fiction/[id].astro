@@ -149,6 +149,9 @@ const jsonLd = {
     -webkit-hyphens: auto;
     /* Old-style figures sit better in running prose. */
     font-variant-numeric: oldstyle-nums;
+    /* Never strand a single line at the foot or head of a column. */
+    orphans: 2;
+    widows: 2;
   }
 
   .chapter__body :global(p) {
@@ -209,8 +212,12 @@ const jsonLd = {
     line-height: 1.5;
   }
 
+  /* Keep a sender's name with their messages. Without this the column break
+     can strand "Kim" alone at the foot of one page and put what she said at
+     the top of the next, which no typesetter would allow. */
   .chapter__body :global(.chat__turn) {
     margin-block-start: 1.15em;
+    break-inside: avoid;
   }
 
   .chapter__body :global(.chat__turn--in) {
@@ -241,6 +248,18 @@ const jsonLd = {
     inline-size: 1em;
     block-size: auto;
     flex: none;
+    color: var(--ink);
+  }
+
+  /* Emphasis inside a message. Italic is already the default here, so it
+     cannot also mark emphasis — the book underlines, and so does this. */
+  .chapter__body :global(.chat__msg u) {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  .chapter__body :global(.chat__msg strong) {
+    font-weight: 700;
     color: var(--ink);
   }
 
