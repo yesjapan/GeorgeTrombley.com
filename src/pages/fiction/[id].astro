@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookReader from '../../components/BookReader.astro';
 import { site, links, publisher } from '../../data/site';
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -60,9 +61,11 @@ const jsonLd = {
       <h1 class="chapter__title">{d.title}</h1>
     </header>
 
-    <div class="chapter__body">
-      <Content />
-    </div>
+    <BookReader label={d.title}>
+      <div class="chapter__body">
+        <Content />
+      </div>
+    </BookReader>
 
     <footer class="chapter__end">
       <hr class="rule" />
@@ -93,7 +96,7 @@ const jsonLd = {
   /* A reading column, narrower than the rest of the site and centred — this is
      the one page people stay on for ten minutes rather than scan. */
   .chapter {
-    width: min(100% - var(--gutter) * 2, 38rem);
+    width: min(100% - var(--gutter) * 2, 64rem);
     margin-inline: auto;
     padding-block: var(--space-2xl);
   }

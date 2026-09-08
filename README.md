@@ -160,6 +160,49 @@ be decided independently.
 To write directly here instead, just add the `.md` file — no Substack involved,
 and nothing to configure.
 
+### A fiction excerpt
+
+`src/content/fiction/*.md` → `/fiction/<slug>`. The Fate Squared chapter one file
+already exists as an empty template: paste the prose in and set `draft: false`.
+
+**`draft` defaults to `true` in this collection**, unlike everywhere else. A draft
+produces no route at all — nothing to stumble on, nothing indexed — and the
+"Read the first chapter" buttons on the home page and `/fiction` stay pointed at
+`/fiction` until a chapter is actually published, then rewire themselves. There
+is nothing to update by hand.
+
+Prose formatting: blank line between paragraphs, `*asterisks*` for italics, and a
+line containing only `---` for a scene break (renders as a centred `· · ·`, not a
+rule). The drop cap is automatic.
+
+### The book reader
+
+Excerpts render in a paginated reader that reads like an open book — two pages
+with a spine, page-turn sound, arrow keys and swipe.
+
+It works by flowing the prose into **CSS multi-columns** inside a fixed-height
+box; each column is a page and turning is a horizontal translate. Nothing is
+pre-split into fixed pages, which is what makes it survive a resize, a rotation
+or a reader zooming the text. Consequences:
+
+- The whole chapter is in the HTML, so it is selectable, searchable, indexable,
+  and available to a screen reader as continuous prose whichever page is showing.
+- **With JavaScript off the reader never initialises and the same markup is an
+  ordinary scrolling article.** That is the default state, not a fallback.
+- A **Continuous** toggle returns to scrolling text at any time. The choice, and
+  the sound setting, are remembered in `localStorage`.
+- The page height is computed from the window minus the sticky header, toolbar
+  and page counter, so a spread fits on screen — otherwise you would have to
+  scroll *and* turn pages, which defeats the point. Below 640px of usable width
+  it drops to a single page.
+- Turn animation respects `prefers-reduced-motion`.
+
+**The page-turn sound is synthesised with Web Audio**, not a sample: a short
+noise burst through a band-pass sweeping downward, with a fast attack. That is
+roughly what paper is. It ships no audio file and raises no licensing question.
+To use a real recording instead, replace `PageSound.play()` in
+`src/components/BookReader.astro` with an `Audio` element.
+
 ### A news item
 
 Create `src/content/news/some-slug.md`. These are short — a headline, a date, an
