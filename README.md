@@ -119,24 +119,43 @@ Leave `canonicalUrl` unset. It is an SEO escape hatch for conceding search
 rankings to some other copy of a post, and this site does not concede any —
 including for posts mirrored from Substack.
 
-### Substack mirroring
+### Pulling posts from Substack
 
-`.github/workflows/substack.yml` checks the Substack feed every six hours and
-commits any new post into `src/content/posts/`. **Publish on Substack and it
-appears here on its own**, usually within a few hours.
+When you publish on Substack, run:
 
-- **Only new posts are written.** An existing file is skipped, so edits made here
-  are never clobbered. The trade-off is that edits made *on Substack* after a
-  post is imported do not flow through — re-import that one by hand with
-  `npm run import-substack -- --force` if you need them.
-- **Imported posts get `sourceUrl`, not `canonicalUrl`.** `sourceUrl` renders the
-  "Also published on Substack" credit and links back. `canonicalUrl` would tell
-  Google that the Substack copy is the one to rank, which is not wanted:
-  Substack's reach comes from its own discovery and recommendations, not from
-  search, so there is nothing to gain by handing it the ranking. Two separate
-  fields precisely so crediting and conceding can be decided independently.
-- The conversion is automated and lands without review, so **skim new posts after
-  they arrive**. HTML-to-Markdown is never perfect.
+```bash
+npm run import-substack     # writes any new posts
+git add src/content/posts && git commit -m "New post" && git push
+```
+
+**Only new posts are written.** Existing files are skipped, so edits made here
+are never clobbered — but edits made *on Substack* after a post is imported do
+not flow through either. Re-import that one with
+`npm run import-substack -- --force` if you need them.
+
+Skim the generated Markdown before pushing. HTML-to-Markdown is never perfect.
+
+**Imported posts get `sourceUrl`, not `canonicalUrl`.** `sourceUrl` renders the
+"Also published on Substack" credit and links back; `canonicalUrl` would tell
+Google the Substack copy is the one to rank, which is not wanted. Substack's
+reach comes from its own discovery and recommendations rather than from search,
+so there is nothing to gain by conceding the ranking, and this site is the asset
+worth building up. Two separate fields precisely so crediting and conceding can
+be decided independently.
+
+> **Why this is not automated.** It was tried and reverted. Substack sits behind
+> Cloudflare and **blocks GitHub Actions runners outright**: probed from a
+> runner, the RSS feed, both `/api/v1` endpoints, the `substack.com` feed and
+> even the publication homepage all return 403, with and without browser-shaped
+> headers. The same requests succeed from a home connection, so it is an IP-range
+> block, not a user-agent check. A scheduled workflow could only ever fail — and
+> would email a failure notice every six hours — so it was removed.
+>
+> The importer still sends browser headers and retries with backoff, which helps
+> on flaky home connections. If you ever want this automated, it would have to
+> run somewhere that isn't a blocked datacentre range — a Cloudflare Worker on a
+> cron, holding a GitHub token to commit with. That is a lot of moving parts for
+> a one-line command, so it was not built.
 
 To write directly here instead, just add the `.md` file — no Substack involved,
 and nothing to configure.
