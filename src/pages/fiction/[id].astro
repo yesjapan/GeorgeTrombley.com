@@ -53,15 +53,21 @@ const jsonLd = {
   jsonLd={jsonLd}
 >
   <!--
-    The book's interior is set in a text serif, not the display serif the rest
-    of the site uses. Loaded only here — it would be dead weight on every other
-    page.
+    Fonts taken from the manuscript itself rather than guessed: the .docx sets
+    body prose in Times New Roman 10.5pt, headings in FateSquaredR, and inherits
+    Arial for the chat. Times and Arial are on effectively every device, so the
+    only webfont needed is George's own display face — one 18KB file, and no
+    Google Fonts request at all.
   -->
-  <link
-    slot="head"
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400..600;1,8..60,400..600&display=swap"
-  />
+  <style slot="head" is:inline>
+    @font-face {
+      font-family: 'FateSquared';
+      src: url('/fonts/FateSquared-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
 
   <article class="chapter">
     <header class="chapter__head">
@@ -107,6 +113,9 @@ const jsonLd = {
   /* A reading column, narrower than the rest of the site and centred — this is
      the one page people stay on for ten minutes rather than scan. */
   .chapter {
+    /* The manuscript sets Heading1 in FateSquaredR; the running heads and
+       chapter title follow it. */
+    --reader-head-font: 'FateSquared', var(--font-body);
     width: min(100% - var(--gutter) * 2, 64rem);
     margin-inline: auto;
     padding-block: var(--space-2xl);
@@ -125,6 +134,8 @@ const jsonLd = {
   }
 
   .chapter__title {
+    font-family: 'FateSquared', var(--font-display);
+    letter-spacing: 0.01em;
     font-size: var(--text-3xl);
     margin-block: var(--space-2xs) 0;
   }
@@ -138,8 +149,7 @@ const jsonLd = {
      space that make web text look amateur next to a book, so the two go
      together — never enable one alone. */
   .chapter__body {
-    font-family: 'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype',
-      Palatino, Georgia, serif;
+    font-family: 'Times New Roman', Times, Tinos, 'Liberation Serif', serif;
     font-size: clamp(1.0625rem, 1rem + 0.32vw, 1.25rem);
     line-height: 1.68;
     color: var(--ink);
@@ -207,7 +217,7 @@ const jsonLd = {
   .chapter__body :global(.chat) {
     --chat-dot: var(--paper-raised);
     margin-block: 1.9em;
-    font-family: var(--font-body);
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 0.92em;
     line-height: 1.5;
   }

@@ -22,3 +22,9 @@ npm-debug.log*
 # Cover-art drop folder. Publisher source files are 2-4MB each; the normalised
 # JPEGs that scripts/import-covers.mjs writes alongside them are what ships.
 src/content/books/covers/new/
+
+# Manuscripts. The repo is public and these are unpublished drafts — only the
+# converted chapter in src/content/fiction/ is meant to be published.
+*.docx
+*.doc
+~$*

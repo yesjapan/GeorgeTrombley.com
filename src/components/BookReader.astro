@@ -277,7 +277,7 @@ const { label, author, title } = Astro.props;
   .reader__runhead {
     display: flex;
     gap: 0.9em;
-    font-family: var(--font-body);
+    font-family: var(--reader-head-font, var(--font-body));
     font-size: var(--text-2xs);
     font-weight: 600;
     letter-spacing: 0.16em;
