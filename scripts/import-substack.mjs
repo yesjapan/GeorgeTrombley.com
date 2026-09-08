@@ -100,11 +100,55 @@ async function exists(p) {
   }
 }
 
+const BROWSER_HEADERS = {
+  'user-agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36',
+  accept: 'application/rss+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.5',
+  'accept-language': 'en-US,en;q=0.9',
+};
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Fetch the feed, retrying the Cloudflare 403/429 block with backoff. */
+async function fetchWithRetry(url, attempts = 4) {
+  let last;
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      const res = await fetch(url, {
+        headers: BROWSER_HEADERS,
+        redirect: 'follow',
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (res.ok) return res;
+      last = `${res.status} ${res.statusText}`;
+      // Anything other than a block is not worth retrying.
+      if (res.status !== 403 && res.status !== 429 && res.status < 500) break;
+    } catch (err) {
+      last = err.message;
+    }
+    if (i < attempts) {
+      const wait = 3000 * 2 ** (i - 1);
+      console.log(`  attempt ${i} failed (${last}) — retrying in ${wait / 1000}s`);
+      await sleep(wait);
+    }
+  }
+  throw new Error(
+    `Feed request failed after ${attempts} attempts: ${last}\n` +
+      'Substack blocks unfamiliar clients via Cloudflare, and blocks datacentre\n' +
+      'IPs (such as GitHub Actions runners) more aggressively than home ones.\n' +
+      'If this keeps failing in CI but works locally, run the import by hand:\n' +
+      '    npm run import-substack',
+  );
+}
+
 async function main() {
   console.log(`Fetching ${FEED}`);
-  const res = await fetch(FEED, {
-    headers: { 'user-agent': 'georgetrombley.com importer' },
-  });
+  // Substack sits behind Cloudflare and refuses unfamiliar clients with a 403 —
+  // reliably so from datacentre IPs like GitHub Actions runners, where a plain
+  // custom user-agent gets blocked every time even though it works from a home
+  // connection. A browser-shaped request header set gets through. Retried with
+  // backoff because the block is partly rate-based rather than absolute.
+  const res = await fetchWithRetry(FEED);
   if (!res.ok) {
     throw new Error(`Feed request failed: ${res.status} ${res.statusText}`);
   }
