@@ -1,8 +1,17 @@
 ---
 import { Image } from 'astro:assets';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { site, links, publisher } from '../data/site';
-import cover from '../assets/fate-squared-cover.jpg';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { site, links, publisher } from '../../data/site';
+import cover from '../../assets/fate-squared-cover.jpg';
+
+// Published sample chapters, if any. While the chapter file is still a draft
+// this is empty and the page simply doesn't offer a read — rather than linking
+// to a sample that does not exist.
+const excerpts = (await getCollection('fiction'))
+  .filter((e) => !e.data.draft && e.data.book === 'Fate Squared')
+  .sort((a, b) => a.data.order - b.data.order);
+const firstChapter = excerpts[0];
 
 const releaseDate = new Date('2026-10-29T00:00:00Z');
 const isbn = '9781959949046';
@@ -97,7 +106,18 @@ const jsonLd = {
         </dl>
 
         <div class="fiction-page__actions">
-          <a class="btn btn-seal" href={links.fateSquared} rel="noopener">
+          {
+            firstChapter && (
+              <a class="btn btn-seal" href={`/fiction/${firstChapter.id}`}>
+                Read {firstChapter.data.title}
+              </a>
+            )
+          }
+          <a
+            class={firstChapter ? 'btn' : 'btn btn-seal'}
+            href={links.fateSquared}
+            rel="noopener"
+          >
             Go to fatesquared.com
           </a>
         </div>

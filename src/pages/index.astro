@@ -62,6 +62,12 @@ const news = (await getCollection('news'))
 
 const videos = allVideos.slice(0, 4);
 
+// Sample chapter, if one is published. Until then the fiction panel offers the
+// novel's page rather than a "read the first chapter" link with nothing behind it.
+const firstChapter = (await getCollection('fiction'))
+  .filter((e) => !e.data.draft)
+  .sort((a, b) => a.data.order - b.data.order)[0];
+
 const facts = [
   { value: String(books.length), label: 'language books' },
   { value: '4', label: 'languages taught' },
@@ -175,11 +181,23 @@ const jsonLd = [
           person&rsquo;s life a fair trade to save millions?
         </p>
         <div class="fiction__actions">
-          <a class="btn fiction__btn" href={links.fateSquared} rel="noopener">
-            Read the first chapter
-          </a>
-          <a class="btn fiction__btn fiction__btn--ghost" href="/fiction">
-            More about the novel
+          {
+            firstChapter ? (
+              <a class="btn fiction__btn" href={`/fiction/${firstChapter.id}`}>
+                Read {firstChapter.data.title}
+              </a>
+            ) : (
+              <a class="btn fiction__btn" href="/fiction">
+                About the novel
+              </a>
+            )
+          }
+          <a
+            class="btn fiction__btn fiction__btn--ghost"
+            href={links.fateSquared}
+            rel="noopener"
+          >
+            fatesquared.com
           </a>
         </div>
       </div>

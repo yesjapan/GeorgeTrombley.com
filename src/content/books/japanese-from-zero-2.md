@@ -9,7 +9,7 @@ level: Beginner
 formats: [Paperback, Kindle, Online course]
 buy:
   amazon: https://amzn.to/3nEaA1d
-  fromZero: https://www.fromzero.com
+  fromZero: https://www.fromzero.com/books
 blurb: Katakana joins hiragana, and the grammar opens up — past tense, adjectives, and the particles that hold real sentences together.
 ---
 

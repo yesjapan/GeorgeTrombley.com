@@ -100,4 +100,32 @@ const news = defineCollection({
   }),
 });
 
-export const collections = { books, posts, news };
+/**
+ * Fiction excerpts — sample chapters published to sell the novel.
+ *
+ * Separate from `posts` because they are a different kind of thing: they belong
+ * to a book rather than to a date, they are read rather than skimmed, and they
+ * end in a buy button rather than in another essay. They are also deliberately
+ * kept out of the RSS feed, which is for the essays.
+ *
+ * `draft` defaults to TRUE here, the opposite of everywhere else. An excerpt
+ * with no text yet is the normal starting state, and a half-written chapter
+ * going live by accident is worse than one that needs a flag flipped.
+ */
+const fiction = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/fiction' }),
+  schema: z.object({
+    /** e.g. "Chapter One" */
+    title: z.string(),
+    /** Which book this belongs to, e.g. "Fate Squared". */
+    book: z.string(),
+    /** Reading order within the book. */
+    order: z.number(),
+    description: z.string(),
+    /** Where to send a reader who finishes and wants the book. */
+    buyUrl: z.string().url().optional(),
+    draft: z.boolean().default(true),
+  }),
+});
+
+export const collections = { books, posts, news, fiction };

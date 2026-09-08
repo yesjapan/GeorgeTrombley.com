@@ -10,7 +10,7 @@ formats: [Paperback, Kindle, Online course]
 featured: true
 buy:
   amazon: https://amzn.to/3qCFIQO
-  fromZero: https://www.fromzero.com
+  fromZero: https://www.fromzero.com/books
 blurb: The book that starts at zero. Hiragana is introduced a few characters at a time, so by the last chapter you are reading Japanese instead of romaji.
 ---
 

@@ -9,7 +9,7 @@ level: Upper intermediate
 formats: [Paperback, Kindle, Online course]
 buy:
   amazon: https://amzn.to/3FHtHxw
-  fromZero: https://www.fromzero.com
+  fromZero: https://www.fromzero.com/books
 blurb: The final volume, with over 110 grammar and usage sections covering the constructions that separate fluent Japanese from correct Japanese.
 ---
 

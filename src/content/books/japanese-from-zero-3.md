@@ -9,7 +9,7 @@ level: Upper beginner
 formats: [Paperback, Kindle, Online course]
 buy:
   amazon: https://amzn.to/3GLIoB9
-  fromZero: https://www.fromzero.com
+  fromZero: https://www.fromzero.com/books
 blurb: Kanji begins. The book is written entirely in kana, and characters are introduced with the readings you will actually meet first.
 ---
 

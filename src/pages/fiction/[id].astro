@@ -1,0 +1,200 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { site, links, publisher } from '../../data/site';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  // Drafts produce no route at all, so an unfinished chapter has no URL to be
+  // stumbled on or indexed.
+  const excerpts = (await getCollection('fiction')).filter((e) => !e.data.draft);
+  return excerpts.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+};
+
+interface Props {
+  entry: CollectionEntry<'fiction'>;
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+
+// Rough reading time from the raw markdown. 240 wpm is a fair pace for fiction.
+const words = (entry.body ?? '').split(/\s+/).filter(Boolean).length;
+const minutes = Math.max(1, Math.round(words / 240));
+
+const siblings = (await getCollection('fiction'))
+  .filter((e) => !e.data.draft && e.data.book === d.book)
+  .sort((a, b) => a.data.order - b.data.order);
+const position = siblings.findIndex((e) => e.id === entry.id);
+const next = position > -1 && position < siblings.length - 1 ? siblings[position + 1] : undefined;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Chapter',
+  name: d.title,
+  isPartOf: {
+    '@type': 'Book',
+    name: d.book,
+    author: { '@type': 'Person', name: site.name, url: site.url },
+    publisher: { '@type': 'Organization', name: publisher.fiction },
+  },
+  author: { '@type': 'Person', name: site.name, url: site.url },
+  description: d.description,
+  inLanguage: 'en',
+};
+---
+
+<BaseLayout
+  title={`${d.title} — ${d.book}`}
+  description={d.description}
+  type="article"
+  jsonLd={jsonLd}
+>
+  <article class="chapter">
+    <header class="chapter__head">
+      <a class="chapter__back" href="/fiction">&larr; {d.book}</a>
+      <p class="label chapter__meta">
+        {d.book} &middot; {minutes} min read
+      </p>
+      <h1 class="chapter__title">{d.title}</h1>
+    </header>
+
+    <div class="chapter__body">
+      <Content />
+    </div>
+
+    <footer class="chapter__end">
+      <hr class="rule" />
+      {
+        next ? (
+          <a class="chapter__next" href={`/fiction/${next.id}`}>
+            <span class="label">Next</span>
+            <span>{next.data.title}</span>
+          </a>
+        ) : (
+          <p class="chapter__end-note">
+            That&rsquo;s the end of the sample.
+          </p>
+        )
+      }
+
+      <div class="chapter__cta">
+        <a class="btn btn-seal" href={d.buyUrl ?? links.fateSquared} rel="noopener">
+          Get {d.book}
+        </a>
+        <a class="btn" href="/fiction">About the novel</a>
+      </div>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  /* A reading column, narrower than the rest of the site and centred — this is
+     the one page people stay on for ten minutes rather than scan. */
+  .chapter {
+    width: min(100% - var(--gutter) * 2, 38rem);
+    margin-inline: auto;
+    padding-block: var(--space-2xl);
+  }
+
+  .chapter__back {
+    display: inline-block;
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+    text-decoration: none;
+    margin-block-end: var(--space-xl);
+  }
+
+  .chapter__back:hover {
+    color: var(--seal);
+  }
+
+  .chapter__title {
+    font-size: var(--text-3xl);
+    margin-block: var(--space-2xs) 0;
+  }
+
+  .chapter__head {
+    margin-block-end: var(--space-2xl);
+  }
+
+  /* Larger and looser than .prose — sustained reading, not reference. */
+  .chapter__body {
+    font-size: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem);
+    line-height: 1.75;
+    color: var(--ink);
+  }
+
+  .chapter__body :global(p) {
+    margin-block-start: 0;
+  }
+
+  /* Fiction convention: no blank line between paragraphs, indent instead. The
+     first paragraph of the chapter and the first after a scene break are not
+     indented, which is how books actually set it. */
+  .chapter__body :global(p + p) {
+    text-indent: 1.6em;
+    margin-block-start: 0;
+  }
+
+  .chapter__body :global(hr + p) {
+    text-indent: 0;
+  }
+
+  /* Drop cap on the opening paragraph. */
+  .chapter__body :global(> p:first-of-type::first-letter) {
+    float: left;
+    font-family: var(--font-display);
+    font-size: 3.6em;
+    line-height: 0.78;
+    padding-inline-end: 0.08em;
+    padding-block-start: 0.04em;
+    color: var(--seal);
+  }
+
+  /* Scene break: a centred ornament, not a rule across the column. */
+  .chapter__body :global(hr) {
+    border: 0;
+    margin-block: 2em;
+    text-align: center;
+  }
+
+  .chapter__body :global(hr::before) {
+    content: '· · ·';
+    letter-spacing: 0.6em;
+    color: var(--ink-faint);
+    font-size: var(--text-lg);
+  }
+
+  .chapter__body :global(em) {
+    font-style: italic;
+  }
+
+  .chapter__end {
+    margin-block-start: var(--space-2xl);
+  }
+
+  .chapter__end-note {
+    margin-block-start: var(--space-lg);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    color: var(--ink-muted);
+  }
+
+  .chapter__next {
+    display: grid;
+    gap: 0.2em;
+    margin-block-start: var(--space-lg);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    text-decoration: none;
+  }
+
+  .chapter__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin-block-start: var(--space-lg);
+  }
+</style>

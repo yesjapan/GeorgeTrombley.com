@@ -9,7 +9,7 @@ level: Intermediate
 formats: [Paperback, Kindle, Online course]
 buy:
   amazon: https://amzn.to/3fD72Ik
-  fromZero: https://www.fromzero.com
+  fromZero: https://www.fromzero.com/books
 blurb: Intermediate grammar and a much larger kanji load, aimed at the point where textbook Japanese starts sounding like the real thing.
 ---
 
