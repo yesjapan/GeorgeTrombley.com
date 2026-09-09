@@ -11,7 +11,7 @@ tags: [books, japanese-from-zero]
 # is what the credit line below links to. Set draft: false to put it back up.
 sourceUrl: 'https://secretsofjapanese.com/podcast/episodes/27-ive-been-meaning-to-do-this-for-a-decade/'
 originallyPublishedAt: 'the Secrets of Japanese podcast'
-draft: true
+draft: false
 ---
 Around 2012 I was pacing in the area just behind six Japanese engineering staff training on how to service and repair Varian Medical’s Clinac Linear Accelerator. The six week class taught the students, who had flown in from various parts of Japan, how to signal trace power signals from the main power board back to the modulator, how to steer the photon beam it generated, and most importantly fix the machine when it was malfunctioning often with patient’s waiting for their fractionalized doses of radiation timed to hit cancer cells when they were weakest during mitosis.
 

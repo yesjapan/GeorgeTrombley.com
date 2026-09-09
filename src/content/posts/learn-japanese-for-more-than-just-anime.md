@@ -14,7 +14,7 @@ hero: ./images/learn-japanese-for-more-than-just-anime.jpg
 # image is the one the post used, still served by the Squarespace CDN.
 sourceUrl: 'https://secretsofjapanese.com/podcast/episodes/26-learn-japanese-for-more-than-just-anime/'
 originallyPublishedAt: 'the Secrets of Japanese podcast'
-draft: true
+draft: false
 ---
 Don’t get me wrong, learning Japanese so you can watch anime is a great reason to learn. I only have anecdotal evidence, but I’m sure it might be the number one reason people start learning Japanese. I posit, however, that you will miss out on a lot if you solely learn for just anime.
 

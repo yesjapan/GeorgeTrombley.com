@@ -16,7 +16,7 @@ hero: ./images/mystery-solved-about-japanese-adjectives.png
 # CDN — the show notes said "visit georgetrombley.com to see the graphics".
 sourceUrl: 'https://secretsofjapanese.com/podcast/episodes/28-mystery-solved-about-japanese-adjectives/'
 originallyPublishedAt: 'the Secrets of Japanese podcast'
-draft: true
+draft: false
 ---
 You might not believe this, but even though I’ve been fluent in Japanese for over 30 years and wrote five Japanese textbooks, it wasn’t until I learned Korean that I understood why Japanese had two types of adjectives, each with different rules for conjugation.
 
