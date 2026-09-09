@@ -199,6 +199,25 @@ const jsonLd = {
     max-inline-size: none;
   }
 
+  /* A gallery: several images written on consecutive lines of one Markdown
+     paragraph (no blank line between them) lay out as a grid instead of a
+     tall stack — a set of book covers, say. Linked images count too. */
+  .post__body :global(p:has(> img + img)),
+  .post__body :global(p:has(> a + a > img)) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: var(--space-xs);
+    align-items: start;
+  }
+
+  .post__body :global(p:has(> img + img) img),
+  .post__body :global(p:has(> a + a > img) img) {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    margin: 0;
+  }
+
   .post__origin {
     margin-block-start: var(--space-xl);
     font-size: var(--text-sm);

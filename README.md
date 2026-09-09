@@ -120,6 +120,24 @@ Leave `canonicalUrl` unset. It is an SEO escape hatch for conceding search
 rankings to some other copy of a post, and this site does not concede any —
 including for posts mirrored from Substack.
 
+#### Images and galleries in an essay
+
+Images referenced relatively (`![alt](./images/foo.jpg)`) are optimised at
+build like covers. Several images written on consecutive lines of one
+paragraph, with no blank line between them, lay out as a grid rather than a
+tall stack — that is how the book-cover galleries in the recovered 2022 posts
+are done. Linked images work the same way.
+
+#### The three recovered 2022 posts
+
+Three essays from the short-lived Squarespace version of this site (November
+2022) were lost when it went. They are back as drafts: one from the Wayback
+Machine's capture, two transcribed from George reading them aloud on the
+Secrets of Japanese podcast, since no archive ever captured those pages. Each
+file's frontmatter comment says exactly where its text came from and which
+sentences were reconstructed. Read, fix anything the transcript got wrong,
+and set `draft: false`.
+
 ### Pulling posts from Substack
 
 When you publish on Substack, run:
