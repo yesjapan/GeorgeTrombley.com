@@ -221,7 +221,7 @@ Back in the apartment, George dropped his equipment in its normal spot near the 
 
 After brushing his teeth in the kitchen sink which, unlike the bathroom one, didn’t occasionally spit out brown water, he took a cold shower, crawled in his bumpy bed and began reading the second to the last chapter of the novel *Classic Crimes*. It was difficult to read as the author was Scottish and had a tendency to make up words. In an empty room George said “perfidy” aloud, wondering if it was a real word. He’d look it up tomorrow if he remembered.
 
-A ping from his phone interrupted his reading, notifying him of a new message. Pulling the phone off the charger he immediately saw it was Kim sending him yet another conspiracy link about LETR. He tapped the sleep-mode icon and the phone’s screen turned dark*.*
+A ping from his phone interrupted his reading, notifying him of a new message. Pulling the phone off the charger he immediately saw it was Kim sending him yet another conspiracy link about LETR. He tapped the sleep-mode icon and the phone’s screen turned dark.
 
 *No more LETR links today.*
 

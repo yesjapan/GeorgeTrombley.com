@@ -125,10 +125,35 @@ function parseParagraphs(xml) {
 
 /** Runs -> Markdown, merging adjacent runs that share formatting. */
 function runsToMarkdown(runs, { forChat = false } = {}) {
+  const list = runs.filter((r) => r.text);
+  const PLAIN = { bold: false, italic: false, underline: false };
+  const fmtOf = (r) => `${r.bold}|${r.italic}|${r.underline}`;
+  const isInert = (r) => !/[\p{L}\p{N}]/u.test(r.text);
+
   const merged = [];
-  for (const r of runs) {
-    if (!r.text) continue;
+  for (let i = 0; i < list.length; i++) {
+    let r = list[i];
     const last = merged[merged.length - 1];
+
+    // A run of nothing but punctuation and space cannot show emphasis, but
+    // Word will happily leave italic on one: type an italic sentence, then go
+    // back and add the full stop before it, and that stop is italic. Emitted
+    // literally it becomes `*.*` in the Markdown.
+    //
+    // Such a run only ever LOSES emphasis. Formatted like the run before it,
+    // it is simply the end of that run — the full stop closing an italic
+    // thought stays italic. Formatted differently, it is either sandwiched
+    // inside a span (the runs either side match: a comma mid-thought) and
+    // takes that formatting, or it sits at a boundary and is set plain —
+    // the stop after an italic title stays roman, and the stray italic stop
+    // after plain prose loses its italic.
+    if (isInert(r) && !(last && fmtOf(last) === fmtOf(r))) {
+      const next = list.slice(i + 1).find((x) => !isInert(x));
+      const inside = last && next && fmtOf(last) === fmtOf(next);
+      const fmt = inside ? last : PLAIN;
+      r = { text: r.text, bold: fmt.bold, italic: fmt.italic, underline: fmt.underline };
+    }
+
     if (
       last &&
       last.bold === r.bold &&
