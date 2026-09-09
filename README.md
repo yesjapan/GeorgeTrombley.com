@@ -359,12 +359,11 @@ A sentence or two of context.
 ## The video feed
 
 `/videos` fills itself in from YouTube. Nothing to maintain except the channel
-list.
-
-**To switch it on**, edit `src/data/youtube-channels.yml`:
+list in `src/data/youtube-channels.yml`, one entry per channel:
 
 ```yaml
-- id: UCgn9K2qbymsgC7iPxpkHOlg
+- id: UCxuZNRnlprC70l1bnI0n-XQ
+  handle: japanesefromzero
   label: Learn Japanese From Zero!
 ```
 
@@ -374,6 +373,19 @@ accept an `@handle`. To convert one:
 ```bash
 npm run resolve-channel -- @JapaneseFromZero
 ```
+
+(It reads the id from the page's canonical link. An earlier version took the
+first `channelId` in the markup, which on a channel page is often a *featured*
+channel — it handed back a neighbour's id under this channel's name. If an id
+ever looks wrong, fetch `https://www.youtube.com/feeds/videos.xml?channel_id=UC…`
+and check the feed's title.)
+
+**How the page is organised.** With eight channels, one merged feed would be
+whatever the busiest channel posted. Instead the home page shows the four
+newest videos overall; `/videos` shows the newest six, then a row of four for
+each channel with a link to it on YouTube, channels ordered by their most
+recent upload. The refresh keeps six per channel (`limit` overrides) and has
+no global cap, so a quiet channel is never pushed out of the file.
 
 While every entry is commented out, `/videos` says so plainly and the rest of the
 site is unaffected.

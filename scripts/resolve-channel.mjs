@@ -54,11 +54,15 @@ if (!res.ok) {
 
 const html = await res.text();
 
-// Several places carry it; take the first that matches.
+// Several places carry it; take the first that matches. Order matters: the
+// canonical link, the RSS link and `externalId` are the page's OWN channel.
+// A bare `"channelId"` is not — a channel page mentions featured and related
+// channels too, and the first one in the markup is often one of those. Reading
+// that used to hand back a neighbour's id with this channel's title.
 const patterns = [
-  /"channelId":"(UC[A-Za-z0-9_-]{22})"/,
+  /<link rel="canonical" href="https:\/\/www\.youtube\.com\/channel\/(UC[A-Za-z0-9_-]{22})"/,
+  /application\/rss\+xml[^>]*channel_id=(UC[A-Za-z0-9_-]{22})/,
   /"externalId":"(UC[A-Za-z0-9_-]{22})"/,
-  /channel\/(UC[A-Za-z0-9_-]{22})/,
 ];
 
 let id;

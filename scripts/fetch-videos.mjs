@@ -31,10 +31,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CHANNELS_FILE = path.join(ROOT, 'src', 'data', 'youtube-channels.yml');
 const OUT_FILE = path.join(ROOT, 'src', 'data', 'videos.json');
 
-/** Total videos kept across all channels. */
-const MAX_TOTAL = 24;
-/** Default per-channel cap before merging. */
-const DEFAULT_PER_CHANNEL = 10;
+/**
+ * Videos kept per channel. The pages group by channel and show a row of four
+ * each, plus a "latest across everything" strip drawn from the same pool; six
+ * leaves a little slack for that strip without bloating the file. There is no
+ * global cap: with several channels, a busy one would otherwise crowd the
+ * quiet ones out of the file entirely.
+ */
+const DEFAULT_PER_CHANNEL = 6;
 const FEED_BASE = 'https://www.youtube.com/feeds/videos.xml?channel_id=';
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' });
@@ -66,6 +70,7 @@ async function readChannels() {
     return {
       id: entry.id,
       label: entry.label ?? '',
+      handle: typeof entry.handle === 'string' ? entry.handle.replace(/^@/, '') : '',
       limit: Number.isInteger(entry.limit) ? entry.limit : DEFAULT_PER_CHANNEL,
     };
   });
@@ -107,6 +112,11 @@ async function fetchChannel(channel) {
         thumbnail: thumb ?? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
         channelId: channel.id,
         channelLabel: channel.label || channelTitle || '',
+        // The channel's page, for a "more from this channel" link. The @handle
+        // URL is the stable, human one; the id URL always works as a fallback.
+        channelUrl: channel.handle
+          ? `https://www.youtube.com/@${channel.handle}`
+          : `https://www.youtube.com/channel/${channel.id}`,
       };
     })
     .filter(Boolean)
@@ -160,9 +170,9 @@ async function main() {
     if (!byId.has(video.id)) byId.set(video.id, video);
   }
 
-  const videos = [...byId.values()]
-    .sort((a, b) => Date.parse(b.published) - Date.parse(a.published))
-    .slice(0, MAX_TOTAL);
+  const videos = [...byId.values()].sort(
+    (a, b) => Date.parse(b.published) - Date.parse(a.published),
+  );
 
   // Compare on the video list only. `updated` changes every run by definition,
   // so including it would defeat the no-op check and commit on every cron tick.

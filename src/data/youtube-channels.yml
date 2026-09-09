@@ -10,14 +10,42 @@
 #
 #     npm run resolve-channel -- @JapaneseFromZero
 #
-# `label` is the channel name shown on the card. `limit` is optional and caps how
-# many of that channel's recent videos are considered (default 10).
+# `handle` is the channel's @name, used for the "Channel on YouTube" link.
+# `label` is the name shown on the page; leave it out to use the channel's own
+# title from YouTube. `limit` (optional) caps how many of that channel's recent
+# videos are kept, default 6.
 #
-# Uncomment and edit. While every entry is commented out the videos page simply
-# says nothing is configured yet, and the rest of the site is unaffected.
+# The videos page shows the newest six across all channels, then a row for
+# each channel, most recently active first. Order here does not matter.
 
-# Resolved for you, but NOT enabled — please confirm it is the channel you want.
-# This one is the Spanish-language "Japonés ¡Desde Cero!" channel; its most
-# recent upload was January 2023.
-# - id: UCgn9K2qbymsgC7iPxpkHOlg
-#   label: Learn Japanese From Zero!
+- id: UCxuZNRnlprC70l1bnI0n-XQ
+  handle: japanesefromzero
+  label: Learn Japanese From Zero!
+
+- id: UCed10TzRi6H13tyRBHyljhw
+  handle: koreanfromzero
+  label: Learn Korean From Zero!
+
+- id: UC73knhzfxJxyXE5HbRsJKxQ
+  handle: GeorgeTrombley
+  label: George Trombley Creates
+
+- id: UClvCWgwANE5sFQTefKdjetQ
+  handle: PolyglotGeorge
+  label: Polyglot George
+
+- id: UCemw0E3rgM4zegcBgiww_kg
+  handle: AdventuresinAsia
+  label: Adventures in Asia!
+
+- id: UCgPs8n0dyE6PPO0O9dK5YSw
+  handle: JapanStoryTime
+  label: Japan Story Time
+
+- id: UCGlxck2YR41iiaOOfFEfglQ
+  handle: eigoegg
+  label: EigoEgg! Fun English Videos
+
+- id: UC_PfVUzuYelqUi_PERRu7WQ
+  handle: TissueBoxChannel
+  label: Tissue Box Channel

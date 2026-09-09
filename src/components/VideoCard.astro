@@ -3,9 +3,11 @@ import type { Video } from '../data/videos';
 
 interface Props {
   video: Video;
+  /** Off inside a section that is already one channel's. */
+  showChannel?: boolean;
 }
 
-const { video } = Astro.props;
+const { video, showChannel = true } = Astro.props;
 
 const published = new Date(video.published);
 const dateLabel = new Intl.DateTimeFormat('en-US', {
@@ -47,7 +49,7 @@ const dateLabel = new Intl.DateTimeFormat('en-US', {
 
   <p class="video__meta">
     <time datetime={video.published}>{dateLabel}</time>
-    {video.channelLabel && <span class="video__channel">{video.channelLabel}</span>}
+    {showChannel && video.channelLabel && <span class="video__channel">{video.channelLabel}</span>}
   </p>
 </article>
 

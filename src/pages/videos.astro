@@ -1,8 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import VideoCard from '../components/VideoCard.astro';
-import { videos, videosUpdated } from '../data/videos';
-
+import { videos, videosUpdated, channels } from '../data/videos';
 
 const updated = videosUpdated ? new Date(videosUpdated) : null;
 
@@ -14,8 +13,12 @@ const updatedLabel = updated
     }).format(updated) + ' UTC'
   : null;
 
-// One card per channel present, for the "where these come from" line.
-const channels = [...new Set(videos.map((v) => v.channelLabel).filter(Boolean))];
+// A row per channel, most recently active first, so the top of the page is
+// the latest without a separate "latest" strip that a prolific channel would
+// fill on its own and then repeat in its row below.
+const PER_CHANNEL = 4;
+const groups = channels();
+const latest = groups.map((c) => c.videos[0]);
 
 const jsonLd =
   videos.length > 0
@@ -23,7 +26,7 @@ const jsonLd =
         '@context': 'https://schema.org',
         '@type': 'ItemList',
         name: 'Recent videos',
-        itemListElement: videos.map((v, i) => ({
+        itemListElement: latest.map((v, i) => ({
           '@type': 'ListItem',
           position: i + 1,
           url: v.url,
@@ -35,7 +38,7 @@ const jsonLd =
 
 <BaseLayout
   title="Videos"
-  description="Recent videos from the From Zero! YouTube channels, refreshed automatically."
+  description="The latest from George Trombley's YouTube channels — Japanese From Zero!, Korean From Zero! and the rest — refreshed automatically."
   jsonLd={jsonLd}
 >
   <section class="section wrap-wide">
@@ -43,10 +46,10 @@ const jsonLd =
     <h1 class="videos__title">Recent videos</h1>
 
     {
-      channels.length > 0 && (
+      groups.length > 0 && (
         <p class="videos__lede">
-          Pulled automatically from {channels.join(' and ')}, refreshed every few
-          hours.
+          {groups.length} channels, most recently active first, pulled from
+          YouTube every few hours.
         </p>
       )
     }
@@ -67,13 +70,25 @@ const jsonLd =
     }
 
     {
-      videos.length > 0 && (
-        <div class="videos__grid">
-          {videos.map((video) => (
-            <VideoCard video={video} />
-          ))}
+      groups.map((channel) => (
+        <div class="videos__block videos__channel" aria-labelledby={`ch-${channel.id}`}>
+          <div class="section-head">
+            <h2 id={`ch-${channel.id}`}>
+              <a class="videos__channel-link" href={channel.url} rel="noopener">
+                {channel.label}
+              </a>
+            </h2>
+            <a class="section-head__more" href={channel.url} rel="noopener">
+              Channel on YouTube &rarr;
+            </a>
+          </div>
+          <div class="videos__grid">
+            {channel.videos.slice(0, PER_CHANNEL).map((video) => (
+              <VideoCard video={video} showChannel={false} />
+            ))}
+          </div>
         </div>
-      )
+      ))
     }
 
     {
@@ -94,6 +109,21 @@ const jsonLd =
     color: var(--ink-muted);
     font-size: var(--text-lg);
     margin-block-end: var(--space-xl);
+  }
+
+  .videos__channel + .videos__channel {
+    margin-block-start: var(--space-2xl);
+    padding-block-start: var(--space-xl);
+    border-block-start: 1px solid var(--rule);
+  }
+
+  .videos__channel-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .videos__channel-link:hover {
+    color: var(--seal);
   }
 
   .videos__grid {
