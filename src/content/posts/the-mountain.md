@@ -3,7 +3,9 @@ title: The Mountain
 date: 2026-09-09
 description: Something I wrote while waiting for my wife as Frenchman Mountain watched over me.
 tags:
-  - frenchman mountain, las vegas, george trombley
+  - frenchman mountain
+  - las vegas
+  - george trombley
 hero: ./images/Frenchman Mountain - George.jpg
 draft: false
 ---

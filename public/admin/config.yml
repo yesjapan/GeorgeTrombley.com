@@ -34,6 +34,12 @@ slug:
   clean_accents: true
   sanitize_replacement: '-'
 
+media_libraries:
+  default:
+    config:
+      # "Frenchman Mountain - George.jpg" becomes frenchman-mountain-george.jpg
+      slugify_filename: true
+
 output:
   # Leave optional fields out of the file when empty, instead of writing an
   # empty string that the schema's URL checks would reject.
@@ -74,7 +80,11 @@ collections:
         name: description
         widget: text
         hint: One or two sentences. Shown on the card, as the standfirst, and to search engines.
-      - { label: Tags, name: tags, widget: list, required: false, hint: 'Comma-separated, e.g. japanese, learning' }
+      - label: Tags
+        name: tags
+        widget: list
+        required: false
+        hint: One tag per box — use the + to add another. Commas in one box are split anyway.
       - label: Hero image
         name: hero
         widget: image

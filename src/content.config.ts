@@ -58,7 +58,20 @@ const posts = defineCollection({
       title: z.string(),
       date: z.coerce.date(),
       description: z.string(),
-      tags: z.array(z.string()).default([]),
+      /**
+       * Accepts a list, and also a single string with commas in it — which is
+       * what the writing desk produces when several tags are typed into one
+       * box — and always yields clean separate tags.
+       */
+      tags: z
+        .union([z.array(z.string()), z.string()])
+        .default([])
+        .transform((t) =>
+          (Array.isArray(t) ? t : [t])
+            .flatMap((s) => s.split(','))
+            .map((s) => s.trim())
+            .filter(Boolean),
+        ),
       hero: image().optional(),
       draft: z.boolean().default(false),
       /**
