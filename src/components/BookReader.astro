@@ -482,54 +482,36 @@ const hasCover = Astro.slots.has('cover');
   }
 
   /**
-   * A page turn, synthesised: a short burst of noise through a band-pass that
-   * sweeps downward, fast attack, soft tail — roughly what paper is. Ships no
-   * audio file and raises no licensing question.
+   * The page turn is the same recording the Kanji From Zero! flip-book uses
+   * (/audio/page-turn.mp3, under a second), so the two readers sound alike.
+   * A single <audio> element rewound before each play, exactly as that viewer
+   * does it. Browsers can refuse playback before the first user gesture; the
+   * rejection is swallowed, since a silent turn is not an error.
    */
   class PageSound {
-    private ctx: AudioContext | null = null;
+    private el: HTMLAudioElement | null = null;
     enabled = true;
 
-    private ensure(): AudioContext | null {
-      if (this.ctx) return this.ctx;
-      const Ctor =
-        window.AudioContext ??
-        (window as unknown as { webkitAudioContext?: typeof AudioContext })
-          .webkitAudioContext;
-      if (!Ctor) return null;
-      this.ctx = new Ctor();
-      return this.ctx;
+    constructor(private readonly src: string) {}
+
+    private ensure(): HTMLAudioElement {
+      if (!this.el) {
+        this.el = new Audio(this.src);
+        this.el.preload = 'auto';
+      }
+      return this.el;
+    }
+
+    /** Fetch the clip ahead of the first turn so it plays without a stall. */
+    prime() {
+      this.ensure();
     }
 
     play() {
       if (!this.enabled) return;
-      const ctx = this.ensure();
-      if (!ctx) return;
-      if (ctx.state === 'suspended') void ctx.resume();
-
-      const now = ctx.currentTime;
-      const dur = 0.26;
-      const frames = Math.floor(ctx.sampleRate * dur);
-      const buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < frames; i++) {
-        data[i] = (Math.random() * 2 - 1) * (1 - i / frames) ** 1.4;
-      }
-
-      const src = ctx.createBufferSource();
-      src.buffer = buffer;
-      const band = ctx.createBiquadFilter();
-      band.type = 'bandpass';
-      band.Q.value = 0.7;
-      band.frequency.setValueAtTime(2600, now);
-      band.frequency.exponentialRampToValueAtTime(700, now + dur);
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.16, now + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-      src.connect(band).connect(gain).connect(ctx.destination);
-      src.start(now);
-      src.stop(now + dur);
+      const el = this.ensure();
+      el.currentTime = 0;
+      void el.play().catch(() => {});
     }
   }
 
@@ -552,7 +534,8 @@ const hasCover = Astro.slots.has('cover');
     // The cover, if there is one, is page 0 and lives outside the flow.
     const coverPages = root.hasAttribute('data-has-cover') ? 1 : 0;
 
-    const sound = new PageSound();
+    const sound = new PageSound('/audio/page-turn.mp3');
+    sound.prime();
     sound.enabled = readStore(SOUND_KEY) !== 'off';
     soundBtn?.setAttribute('aria-pressed', String(sound.enabled));
 

@@ -249,9 +249,10 @@ It was briefly a two-page spread. That was one wide page pretending to be two,
 and the messages re-wrapped inside its narrow columns looked amateur. E-readers
 show a single page for a reason.
 
-**The page-turn sound is synthesised with Web Audio** — a noise burst through a
-band-pass sweeping down. To use a real recording, replace `PageSound.play()` in
-`src/components/BookReader.astro` with an `Audio` element.
+**The page-turn sound is the Kanji From Zero! flip-book's** — the same clip,
+copied to `public/audio/page-turn.mp3`, played through a plain `<audio>`
+element rewound before each turn, so the two readers sound alike. Readers can
+mute it from the toolbar; the choice is remembered.
 
 ### Keeping the sample out of search and AI crawlers
 
