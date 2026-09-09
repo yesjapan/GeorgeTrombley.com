@@ -5,7 +5,7 @@ description: Something I wrote while waiting for my wife as Frenchman Mountain w
 tags:
   - frenchman mountain, las vegas, george trombley
 hero: ./images/Frenchman Mountain - George.jpg
-draft: true
+draft: false
 ---
 
 The mountain stared back and me with its never changed expression. Its rock slanted at a perfect 60-degree slant to the left counterclockwise. How long was the mountain staring in human terms. Did it even notice when the first human settlers in the Las Vegas valley began building a downtown area. Did it understand the significance of the first casino, The Flamingo, built along what would become the strip where millions of tourists flocked each year to see world class shows and dump quarters into one-armed bandits?
