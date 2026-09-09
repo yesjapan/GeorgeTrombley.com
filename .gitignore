@@ -28,3 +28,6 @@ src/content/books/covers/new/
 *.docx
 *.doc
 ~$*
+
+# wrangler pages dev (local test of the auth Function) leaves its cache here
+.wrangler/
