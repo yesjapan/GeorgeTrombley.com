@@ -1,0 +1,229 @@
+# Sveltia CMS — the writing desk at /admin/.
+#
+# Every collection here mirrors a schema in src/content.config.ts. The CMS
+# writes ordinary Markdown files into the same folders you would edit by hand,
+# commits them to GitHub, and Cloudflare builds the site as it does for any
+# other commit. Keep the two in step: a field added to a schema should be added
+# here, or the CMS will not offer it.
+
+backend:
+  name: github
+  repo: yesjapan/GeorgeTrombley.com
+  branch: main
+  # The GitHub sign-in handler is part of this site (see functions/ or the
+  # worker), so the callback stays on our own domain.
+  base_url: https://georgetrombley.com
+  auth_endpoint: api/auth
+  commit_messages:
+    create: 'Add {{collection}} “{{slug}}”'
+    update: 'Update {{collection}} “{{slug}}”'
+    delete: 'Remove {{collection}} “{{slug}}”'
+    uploadMedia: 'Add image {{path}}'
+    deleteMedia: 'Remove image {{path}}'
+
+site_url: https://georgetrombley.com
+display_url: https://georgetrombley.com
+logo_url: /favicon.svg
+
+# Stray uploads land here; each collection below has its own image folder.
+media_folder: public/uploads
+public_folder: /uploads
+
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: '-'
+
+output:
+  # Leave optional fields out of the file when empty, instead of writing an
+  # empty string that the schema's URL checks would reject.
+  omit_empty_optional_fields: true
+
+collections:
+  # ---------------------------------------------------------------- Writing
+  - name: posts
+    label: Writing
+    label_singular: Essay
+    description: Essays and thoughts. A draft stays off the site until the box is unticked.
+    folder: src/content/posts
+    create: true
+    extension: md
+    format: yaml-frontmatter
+    slug: '{{slug}}'
+    media_folder: /src/content/posts/images
+    public_folder: ./images
+    summary: '{{title}} · {{date}}'
+    sortable_fields: [date, title]
+    view_filters:
+      - label: Drafts
+        field: draft
+        pattern: true
+      - label: Published
+        field: draft
+        pattern: false
+    fields:
+      - { label: Title, name: title, widget: string }
+      - label: Date
+        name: date
+        widget: datetime
+        format: 'YYYY-MM-DD'
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+        picker_utc: true
+      - label: Description
+        name: description
+        widget: text
+        hint: One or two sentences. Shown on the card, as the standfirst, and to search engines.
+      - { label: Tags, name: tags, widget: list, required: false, hint: 'Comma-separated, e.g. japanese, learning' }
+      - label: Hero image
+        name: hero
+        widget: image
+        required: false
+        hint: Optional. Shown full width above the text.
+      - label: Draft
+        name: draft
+        widget: boolean
+        default: false
+        hint: Ticked = not on the site.
+      - label: Also published on
+        name: originallyPublishedAt
+        widget: string
+        required: false
+        hint: 'e.g. Substack. Shown as a credit line with the link below.'
+      - { label: Source link, name: sourceUrl, widget: string, required: false, hint: 'Where it first appeared. Full URL.' }
+      - label: Canonical URL
+        name: canonicalUrl
+        widget: string
+        required: false
+        hint: Leave empty. Only set this to concede search ranking to another copy of the essay.
+      - { label: Body, name: body, widget: markdown }
+
+  # ------------------------------------------------------------------- News
+  - name: news
+    label: News
+    label_singular: News item
+    description: Short dated updates. Body is a sentence or two; the link is optional.
+    folder: src/content/news
+    create: true
+    extension: md
+    format: yaml-frontmatter
+    slug: '{{slug}}'
+    summary: '{{title}} · {{date}}'
+    sortable_fields: [date, title]
+    fields:
+      - { label: Title, name: title, widget: string }
+      - label: Date
+        name: date
+        widget: datetime
+        format: 'YYYY-MM-DD'
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+        picker_utc: true
+      - label: Link
+        name: link
+        widget: string
+        required: false
+        hint: 'A full URL (https://…) or a path on this site (/books/…).'
+      - { label: Body, name: body, widget: markdown, required: false }
+
+  # ------------------------------------------------------------------ Books
+  - name: books
+    label: Books
+    label_singular: Book
+    description: One entry per book. The series and order decide where it sits on the shelf.
+    folder: src/content/books
+    create: true
+    extension: md
+    format: yaml-frontmatter
+    slug: '{{slug}}'
+    media_folder: /src/content/books/covers
+    public_folder: ./covers
+    summary: '{{title}}'
+    sortable_fields: [series, order, title]
+    view_groups:
+      - label: Series
+        field: series
+    fields:
+      - { label: Title, name: title, widget: string }
+      - label: Series
+        name: series
+        widget: select
+        options:
+          - { label: 'Japanese From Zero!', value: japanese-from-zero }
+          - { label: 'Kana From Zero!', value: kana-from-zero }
+          - { label: 'Kanji From Zero!', value: kanji-from-zero }
+          - { label: 'Korean From Zero!', value: korean-from-zero }
+          - { label: 'Hangul From Zero!', value: hangul-from-zero }
+          - { label: 'Spanish From Zero!', value: spanish-from-zero }
+      - { label: Order in series, name: order, widget: number, value_type: int, min: 1 }
+      - { label: Subtitle, name: subtitle, widget: string, required: false }
+      - label: ISBN-13
+        name: isbn13
+        widget: string
+        required: false
+        pattern: ['^\d{13}$', '13 digits, no hyphens']
+        hint: Drives the Amazon, Walmart and Barnes & Noble links on the Buy page.
+      - { label: Cover, name: cover, widget: image, required: false }
+      - { label: Published (year), name: publishedYear, widget: number, value_type: int, required: false }
+      - { label: Co-authors, name: coauthors, widget: list, required: false }
+      - { label: Level, name: level, widget: string, required: false, hint: 'e.g. Absolute beginner' }
+      - label: Formats
+        name: formats
+        widget: select
+        multiple: true
+        required: false
+        options: [Paperback, Kindle, Audio, Online course]
+      - label: Buy links
+        name: buy
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Amazon, name: amazon, widget: string, required: false }
+          - { label: Barnes & Noble, name: barnesNoble, widget: string, required: false }
+          - { label: Bookshop.org, name: bookshop, widget: string, required: false }
+          - { label: fromzero.com, name: fromZero, widget: string, required: false }
+      - label: Blurb
+        name: blurb
+        widget: text
+        hint: One or two sentences for cards and search results.
+      - { label: Featured, name: featured, widget: boolean, default: false, required: false }
+      - { label: Draft, name: draft, widget: boolean, default: false, required: false, hint: 'Ticked = not on the site.' }
+      - { label: Description, name: body, widget: markdown, required: false, hint: 'The long description on the book’s own page.' }
+
+  # ---------------------------------------------------------------- Fiction
+  - name: fiction
+    label: Fiction
+    label_singular: Excerpt
+    description: >-
+      Sample chapters of the novel, plus the book's front matter. Chapters are
+      converted from the manuscript by scripts/import-docx.mjs; this is the
+      place to flip a draft or fix a line, not to type a chapter.
+    folder: src/content/fiction
+    create: true
+    extension: md
+    format: yaml-frontmatter
+    slug: '{{slug}}'
+    summary: '{{book}} · {{title}}'
+    sortable_fields: [book, order]
+    fields:
+      - label: Kind
+        name: kind
+        widget: select
+        options:
+          - { label: Chapter (has its own page), value: chapter }
+          - { label: Front matter (cover, title page, foreword — shown before chapter one), value: front }
+        default: chapter
+      - { label: Title, name: title, widget: string, hint: 'e.g. Chapter One' }
+      - { label: Heading as printed, name: heading, widget: string, required: false, hint: 'Only if it differs from the title, e.g. 1 - George' }
+      - { label: Book, name: book, widget: string, default: Fate Squared }
+      - { label: Order, name: order, widget: number, value_type: int, min: 0, hint: 'Reading order. Front matter is 0.' }
+      - { label: Description, name: description, widget: text }
+      - { label: Buy link, name: buyUrl, widget: string, required: false }
+      - { label: Draft, name: draft, widget: boolean, default: true, hint: 'Ticked = not on the site. New excerpts start as drafts.' }
+      - { label: 'Front matter: cover image path', name: cover, widget: string, required: false, hint: 'Relative to this file, e.g. ../../assets/fate-squared-cover.jpg' }
+      - { label: 'Front matter: lockup SVG', name: lockup, widget: string, required: false, hint: 'File name in src/assets/, e.g. fate-squared-lockup.svg' }
+      - { label: 'Front matter: subtitle', name: subtitle, widget: string, required: false }
+      - { label: 'Front matter: author', name: author, widget: string, required: false }
+      - { label: 'Front matter: copyright line', name: copyright, widget: string, required: false }
+      - { label: Body, name: body, widget: markdown }

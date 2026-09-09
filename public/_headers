@@ -46,3 +46,14 @@
 # covers clients that read headers and not markup.
 /fiction/:excerpt/
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+
+# The writing desk (Sveltia CMS) and its GitHub login handler. Not for indexes,
+# and never cached: the admin page pins a CMS version that changes on purpose,
+# and an auth response must not outlive the request.
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/api/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store

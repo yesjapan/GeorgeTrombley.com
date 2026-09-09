@@ -31,6 +31,48 @@ npm run dev          # http://localhost:4321
 
 ---
 
+## Writing from the admin
+
+The writing desk at **https://georgetrombley.com/admin/** is
+[Sveltia CMS](https://github.com/sveltia/sveltia-cms): a static page
+(`public/admin/`) that edits the Markdown in this repository through GitHub
+and commits it, so Cloudflare builds the site exactly as it does for a commit
+from VS Code. Essays, news, books and fiction excerpts are all in it. The
+fields are described in `public/admin/config.yml` and mirror
+`src/content.config.ts` — add a field to one, add it to the other.
+
+Sign-in is GitHub OAuth, handled on this same domain by a Cloudflare Pages
+Function (`functions/api/auth/[[route]].js`; the logic is in
+`cms/github-oauth.js`). It needs two keys that only the account owner can
+create, so there is a **one-time setup in two steps**:
+
+1. **Create a GitHub OAuth app.** GitHub → Settings → Developer settings →
+   OAuth Apps → *New OAuth App*. Application name `georgetrombley.com writing
+   desk`; Homepage URL `https://georgetrombley.com`; Authorization callback URL
+   `https://georgetrombley.com/api/auth/callback`. Register it, then *Generate
+   a new client secret*. Keep the Client ID and the secret — the secret is
+   shown once.
+2. **Give the keys to Cloudflare.** Dashboard → Workers & Pages →
+   *georgetrombley-com* → Settings → Environment variables → Production: add
+   `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` (tick *Encrypt* on the
+   secret). Then Deployments → *Retry deployment* on the latest one so the
+   Function picks them up.
+
+Open `/admin/`, *Sign in with GitHub*, approve once. Until step 2 is done the
+sign-in popup says what is missing instead of failing silently.
+
+**Day to day.** New essay → title, date, description → write → untick
+*Draft* when it should go live → *Save*. Save is a commit; the site is
+rebuilt in about a minute. Images dropped into the editor land in
+`src/content/posts/images/` and are optimised at build; several in a row
+become a grid. **Locally**, with `npm run dev` running, open
+`http://localhost:4321/admin/index.html` and choose *Work with Local
+Repository*: edits go straight into your working copy with no GitHub round
+trip (Chrome or Edge). The CMS version is pinned in `public/admin/index.html`;
+bump it on purpose, not by accident.
+
+The admin and the auth route are kept out of search (`robots.txt`, `_headers`)
+and are never cached.
 ## Adding things
 
 Everything is a file. No CMS, no database, no admin login. Add the file, commit,

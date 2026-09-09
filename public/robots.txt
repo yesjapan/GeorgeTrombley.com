@@ -4,6 +4,9 @@
 # surface as a bare listing.
 User-agent: *
 Allow: /
+# The writing desk and its login handler are not pages.
+Disallow: /admin/
+Disallow: /api/
 
 # AI training and scraping crawlers: keep off the sample chapters. Only the
 # well-behaved ones honour this; Cloudflare's "Block AI scrapers and crawlers"
