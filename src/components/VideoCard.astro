@@ -75,18 +75,20 @@ const dateLabel = new Intl.DateTimeFormat('en-US', {
     box-shadow: var(--shadow-cover);
   }
 
-  /* YouTube's 4:3 hqdefault has black bars top and bottom on 16:9 uploads.
-     Scaling up and cropping removes them. */
+  /* YouTube's 4:3 hqdefault carries black bars top and bottom on a 16:9
+     upload — 45px of 360, i.e. 12.5% each. Covering a 16:9 frame with a 4:3
+     image crops exactly that much, so the bars go and nothing else does. No
+     further scaling: an earlier 1.35x on top of this cut a third off every
+     edge of every thumbnail. */
   .video__thumb {
     inline-size: 100%;
     block-size: 100%;
     object-fit: cover;
-    transform: scale(1.35);
     transition: transform var(--dur-slow) var(--ease-out);
   }
 
   .video__link:hover .video__thumb {
-    transform: scale(1.42);
+    transform: scale(1.04);
   }
 
   .video__play {
