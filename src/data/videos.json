@@ -1,6 +1,16 @@
 {
-  "updated": "2026-09-09T09:39:42.111Z",
+  "updated": "2026-09-10T11:17:11.655Z",
   "videos": [
+    {
+      "id": "zTp8vMuj-AQ",
+      "title": "is too many a bad thing?",
+      "published": "2026-09-09T22:49:05.000Z",
+      "url": "https://www.youtube.com/watch?v=zTp8vMuj-AQ",
+      "thumbnail": "https://i3.ytimg.com/vi/zTp8vMuj-AQ/hqdefault.jpg",
+      "channelId": "UClvCWgwANE5sFQTefKdjetQ",
+      "channelLabel": "Polyglot George",
+      "channelUrl": "https://www.youtube.com/@PolyglotGeorge"
+    },
     {
       "id": "Zgibpmb4wgk",
       "title": "I'm done... I think",
@@ -47,16 +57,6 @@
       "published": "2026-08-30T17:31:20.000Z",
       "url": "https://www.youtube.com/watch?v=9j5o5KfvbVw",
       "thumbnail": "https://i2.ytimg.com/vi/9j5o5KfvbVw/hqdefault.jpg",
-      "channelId": "UClvCWgwANE5sFQTefKdjetQ",
-      "channelLabel": "Polyglot George",
-      "channelUrl": "https://www.youtube.com/@PolyglotGeorge"
-    },
-    {
-      "id": "GDC8Orx_EsU",
-      "title": "PolyglotGeorge LIVE: cold showers are weird",
-      "published": "2026-08-26T05:31:42.000Z",
-      "url": "https://www.youtube.com/watch?v=GDC8Orx_EsU",
-      "thumbnail": "https://i4.ytimg.com/vi/GDC8Orx_EsU/hqdefault.jpg",
       "channelId": "UClvCWgwANE5sFQTefKdjetQ",
       "channelLabel": "Polyglot George",
       "channelUrl": "https://www.youtube.com/@PolyglotGeorge"
