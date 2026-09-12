@@ -73,7 +73,50 @@ bump it on purpose, not by accident.
 
 The admin and the auth route are kept out of search (`robots.txt`, `_headers`)
 and are never cached.
-## Adding things
+## Comments
+
+Readers can comment under essays. Comments are content: each one is a small
+Markdown file in `src/content/comments/`, and moderation happens in the
+writing desk.
+
+**How a comment travels.** The form under an essay posts to `/api/comments`
+(a Pages Function; logic in `cms/comments.js`). It checks the sender with
+Cloudflare Turnstile, rejects the obviously junk (empty, over 2,000 characters,
+more than two links, a filled honeypot field, an essay that doesn't exist),
+and commits the comment with `approved: false`. The commit message carries
+`[CI Skip]`, so nothing is built and nothing is shown. In the desk, Comments
+→ **Pending** lists what's waiting. Tick *Approved*, save — that's an ordinary
+commit, the site rebuilds, the comment appears under its essay. Delete the
+entry for spam. To reply, add a comment yourself with *This is my reply*
+ticked; it shows with an Author mark.
+
+**Privacy.** Only the name typed and the text are kept — no email, no IP
+address (the IP goes to Turnstile for its check and no further). Comment text
+is rendered as plain paragraphs, never as Markdown or HTML.
+
+**One-time setup, three keys**, all set in the Cloudflare dashboard → Workers &
+Pages → *georgetrombley-com* → Settings → Environment variables (Production),
+then *Retry deployment* on the latest deployment:
+
+1. **Turnstile.** Cloudflare dashboard → Turnstile → *Add widget*. Hostname
+   `georgetrombley.com`, widget mode *Managed*. It gives a **site key** and a
+   **secret key**. Add `PUBLIC_TURNSTILE_SITE_KEY` (plain text — it is public
+   by design and is baked into the page at build) and `TURNSTILE_SECRET_KEY`
+   (encrypt).
+2. **A GitHub token the form can commit with.** GitHub → Settings → Developer
+   settings → Personal access tokens → *Fine-grained tokens* → Generate.
+   Repository access: *Only select repositories* → GeorgeTrombley.com.
+   Permissions: Contents → *Read and write*, nothing else. Expiration: up to a
+   year (put a reminder in the calendar; when it lapses the form starts
+   answering "couldn't be sent"). Add it as `GITHUB_COMMENTS_TOKEN` (encrypt).
+
+Until the site key is set, essays show no form (and no Comments section at
+all unless one already has approved comments). Until the secrets are set, a
+submission is answered with "Comments aren't switched on yet."
+
+**Builds.** Cloudflare Pages allows 500 builds a month on the free plan. The
+`[CI Skip]` marker means a submission costs none; only an approval does.
+
 
 Everything is a file. No CMS, no database, no admin login. Add the file, commit,
 push — Cloudflare Pages rebuilds within a minute.

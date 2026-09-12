@@ -237,3 +237,37 @@ collections:
       - { label: 'Front matter: author', name: author, widget: string, required: false }
       - { label: 'Front matter: copyright line', name: copyright, widget: string, required: false }
       - { label: Body, name: body, widget: markdown }
+
+  # --------------------------------------------------------------- Comments
+  - name: comments
+    label: Comments
+    label_singular: Comment
+    description: >-
+      Reader comments arrive here unapproved and unseen. Tick Approved to put
+      one under its essay; delete the entry for spam. To reply, add a comment
+      yourself with "This is my reply" ticked.
+    folder: src/content/comments
+    create: true
+    extension: md
+    format: yaml-frontmatter
+    slug: '{{fields.post}}--{{year}}{{month}}{{day}}-{{hour}}{{minute}}'
+    summary: '{{name}} on {{post}} · {{date}}'
+    sortable_fields: [date, post, name, approved]
+    view_filters:
+      - { label: Pending, field: approved, pattern: false }
+      - { label: Approved, field: approved, pattern: true }
+    view_groups:
+      - { label: Essay, field: post }
+    fields:
+      - label: Essay
+        name: post
+        widget: relation
+        collection: posts
+        value_field: '{{slug}}'
+        display_fields: ['{{title}}']
+        search_fields: [title]
+      - { label: Name, name: name, widget: string, default: George Trombley }
+      - { label: Date, name: date, widget: datetime, picker_utc: true }
+      - { label: Approved, name: approved, widget: boolean, default: false, hint: 'Ticked = shown under the essay.' }
+      - { label: This is my reply, name: author, widget: boolean, default: false, required: false, hint: 'Marks the comment as the author’s.' }
+      - { label: Comment, name: body, widget: text }

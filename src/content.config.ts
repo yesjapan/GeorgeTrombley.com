@@ -167,4 +167,29 @@ const fiction = defineCollection({
     }),
 });
 
-export const collections = { books, posts, news, fiction };
+/**
+ * Reader comments on essays — content, like everything else.
+ *
+ * The comment form posts to /api/comments, which commits a file here with
+ * `approved: false` (and a [CI Skip] commit message, so nothing is built).
+ * Approving it in the writing desk is an ordinary commit, and the site
+ * rebuilds with the comment under its essay. Nothing about the reader is
+ * kept beyond the name they typed and the text — no email, no address.
+ *
+ * The body is rendered as plain paragraphs, never as Markdown or HTML, so a
+ * comment cannot put markup into the page.
+ */
+const comments = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/comments' }),
+  schema: z.object({
+    /** The essay's id — its filename without .md, i.e. the /writing/ slug. */
+    post: z.string(),
+    name: z.string().max(60),
+    date: z.coerce.date(),
+    approved: z.boolean().default(false),
+    /** George's own reply, shown with an Author mark. */
+    author: z.boolean().default(false),
+  }),
+});
+
+export const collections = { books, posts, news, fiction, comments };

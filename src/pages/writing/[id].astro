@@ -3,6 +3,7 @@ import type { GetStaticPaths } from 'astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { Image, getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Comments from '../../components/Comments.astro';
 import { site } from '../../data/site';
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -61,6 +62,12 @@ const ogImage = d.hero
   image={ogImage?.src}
   jsonLd={jsonLd}
 >
+  {
+    /* Turnstile, for the comment form. Only when comments are switched on. */
+    import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
+      <script slot="head" is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+    )
+  }
   <article class="section wrap post">
     <header class="post__head">
       <a class="post__back" href="/writing">&larr; Writing</a>
@@ -138,6 +145,8 @@ const ogImage = d.hero
         </nav>
       )
     }
+
+    <Comments post={post.id} />
   </article>
 </BaseLayout>
 

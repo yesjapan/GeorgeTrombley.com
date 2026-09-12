@@ -1,0 +1,288 @@
+---
+/**
+ * Reader comments under an essay: the approved ones, then the form.
+ *
+ * Comments are content (src/content/comments/), so this is a build-time
+ * list like everything else on the site. The form posts to /api/comments
+ * with no JavaScript of its own; the function redirects back here with a
+ * fragment, and the matching notice below shows through CSS :target.
+ *
+ * Bodies are rendered as escaped paragraphs, never as Markdown, so a comment
+ * cannot put markup into the page.
+ *
+ * Until PUBLIC_TURNSTILE_SITE_KEY is set on the Cloudflare project, there
+ * is no form — and if there are no comments either, nothing at all.
+ */
+import { getCollection } from 'astro:content';
+
+interface Props {
+  /** The essay's id (its /writing/ slug). */
+  post: string;
+}
+
+const { post } = Astro.props;
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
+
+// Astro warns on every page that reads an empty collection, and until the
+// first comment arrives this one is. Look at the folder first; no files, no
+// query, no warning.
+const anyFiles = Object.keys(import.meta.glob('/src/content/comments/**/*.md')).length > 0;
+
+const comments = anyFiles
+  ? (await getCollection('comments'))
+      .filter((c) => c.data.post === post && c.data.approved)
+      .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf())
+  : [];
+
+const fmt = new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'UTC' });
+const paragraphs = (body: string | undefined) =>
+  (body ?? '')
+    .trim()
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+const heading =
+  comments.length === 0
+    ? 'Comments'
+    : `${comments.length} ${comments.length === 1 ? 'comment' : 'comments'}`;
+---
+
+{
+  (siteKey || comments.length > 0) && (
+    <section class="comments" id="comments" aria-labelledby="comments-heading">
+      <hr class="rule" />
+      <h2 id="comments-heading" class="comments__title">{heading}</h2>
+
+      {comments.length > 0 && (
+        <ol class="comments__list" role="list">
+          {comments.map((c) => (
+            <li class:list={['comment', { 'comment--author': c.data.author }]}>
+              <p class="comment__meta">
+                <span class="comment__name">{c.data.name}</span>
+                {c.data.author && <span class="comment__badge">Author</span>}
+                <time class="comment__date" datetime={c.data.date.toISOString()}>
+                  {fmt.format(c.data.date)}
+                </time>
+              </p>
+              <div class="comment__body">
+                {paragraphs(c.body).map((p) => (
+                  <p>{p}</p>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      <!-- One of these shows when the URL fragment names it. -->
+      <p id="comment-sent" class="comments__notice comments__notice--ok" role="status">
+        Thank you. Your comment is waiting for George to read it, and will appear
+        here once he has.
+      </p>
+      <p id="comment-robot" class="comments__notice" role="status">
+        The spam check didn&rsquo;t pass. Please try again.
+      </p>
+      <p id="comment-error" class="comments__notice" role="status">
+        That comment couldn&rsquo;t be sent &mdash; it may be too long, or have
+        more than a couple of links. Please try again.
+      </p>
+      <p id="comment-config" class="comments__notice" role="status">
+        Comments aren&rsquo;t switched on yet.
+      </p>
+
+      {siteKey ? (
+        <form class="comments__form" method="post" action="/api/comments">
+          <input type="hidden" name="post" value={post} />
+
+          <!-- Honeypot: people never see it; a bot that fills it is ignored. -->
+          <p class="comments__hp" aria-hidden="true">
+            <label>
+              Website
+              <input type="text" name="website" tabindex="-1" autocomplete="off" />
+            </label>
+          </p>
+
+          <div class="comments__field">
+            <label for="comment-name">Name</label>
+            <input
+              id="comment-name"
+              name="name"
+              type="text"
+              required
+              maxlength="60"
+              autocomplete="name"
+            />
+          </div>
+
+          <div class="comments__field">
+            <label for="comment-message">Comment</label>
+            <textarea id="comment-message" name="message" required maxlength="2000" rows="5" />
+          </div>
+
+          <div class="cf-turnstile" data-sitekey={siteKey} data-theme="auto" data-size="flexible" />
+
+          <div class="comments__actions">
+            <button class="btn btn-seal" type="submit">Post comment</button>
+            <p class="comments__note">
+              Read before it appears. No account, no email &mdash; your name and
+              your words are all that&rsquo;s kept.
+            </p>
+          </div>
+        </form>
+      ) : (
+        <p class="comments__closed">Comments are closed for now.</p>
+      )}
+    </section>
+  )
+}
+
+<style>
+  .comments {
+    margin-block-start: var(--space-2xl);
+  }
+
+  .comments__title {
+    font-size: var(--text-2xl);
+    margin-block: var(--space-lg) var(--space-md);
+  }
+
+  /* ---------- The list ---------- */
+  .comments__list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-xl);
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .comment {
+    padding: var(--space-md);
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+  }
+
+  /* George's replies carry the seal on their edge. */
+  .comment--author {
+    border-inline-start: 3px solid var(--seal);
+  }
+
+  .comment__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6em;
+    margin-block-end: var(--space-2xs);
+    font-size: var(--text-sm);
+  }
+
+  .comment__name {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .comment__badge {
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--seal);
+  }
+
+  .comment__date {
+    color: var(--ink-faint);
+  }
+
+  .comment__body {
+    color: var(--ink);
+    line-height: var(--leading-relaxed, 1.6);
+    overflow-wrap: anywhere;
+  }
+
+  .comment__body p + p {
+    margin-block-start: 0.75em;
+  }
+
+  /* ---------- Notices: only the one the URL fragment names ---------- */
+  .comments__notice {
+    display: none;
+    padding: var(--space-sm) var(--space-md);
+    margin-block-end: var(--space-md);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius);
+    color: var(--ink);
+    background: var(--paper-sunken);
+  }
+
+  .comments__notice:target {
+    display: block;
+  }
+
+  .comments__notice--ok {
+    border-color: var(--seal);
+  }
+
+  /* ---------- The form ---------- */
+  .comments__form {
+    display: grid;
+    gap: var(--space-md);
+    max-inline-size: 36rem;
+  }
+
+  .comments__hp {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .comments__field {
+    display: grid;
+    gap: 0.4em;
+  }
+
+  .comments__field label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+
+  .comments__field input,
+  .comments__field textarea {
+    inline-size: 100%;
+    padding: 0.7em 0.9em;
+    background: var(--paper-raised);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius);
+    color: var(--ink);
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .comments__field input:focus-visible,
+  .comments__field textarea:focus-visible {
+    outline: none;
+    border-color: var(--seal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--seal) 20%, transparent);
+  }
+
+  .comments__field textarea {
+    resize: vertical;
+    min-block-size: 7rem;
+  }
+
+  .comments__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .comments__note,
+  .comments__closed {
+    font-size: var(--text-sm);
+    color: var(--ink-faint);
+    max-inline-size: 28ch;
+  }
+</style>
